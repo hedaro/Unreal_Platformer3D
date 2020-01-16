@@ -12,7 +12,7 @@
 #include "InputCoreTypes.h"
 #include "LockOn_Interface.h"
 #include "Animation/AnimMontage.h"
-#include "Components/PrimitiveComponent.h"
+#include "Components/ShapeComponent.h"
 #include "HealthActorComponent.h"
 
 #include "Platformer3DCharacter.generated.h"
@@ -179,11 +179,11 @@ private:
 	float AttackCooldown = 0.f;
 	float LaunchForce = 0.f;
 	float JumpForce = 0.f;
-	//UAnimInstance* AnimInstance; // WHY CANT I JUST COMMENT THIS!!!!!!!!!!!!!!!!!!!!!!!!
+	//UAnimInstance* AnimInstance;
 	FTimerHandle AttackTimerHandle;
 
 	/*** Combat ***/
-	UPrimitiveComponent* AttackHitbox;
+	UShapeComponent* AttackHitbox;
 	UHealthActorComponent* HealthComponent;
 
 
@@ -248,7 +248,10 @@ public:
 
 	/*** Combat ***/
 	UFUNCTION(BlueprintCallable)
-		void RegisterAttackHitbox(UPrimitiveComponent* Hitbox);
+		void RegisterAttackHitbox(UShapeComponent* Hitbox);
+
+	UFUNCTION(BlueprintCallable)
+		void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION(BlueprintCallable)
 		void EnableAttackHitBox();

@@ -10,9 +10,12 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
+#include "Components/StaticMeshComponent.h"
+
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 //////////////////////////////////////////////////////////////////////////
 // APlatformer3DCharacter
@@ -543,16 +546,36 @@ void APlatformer3DCharacter::StopAttackMontage()
 	}*/
 }
 
-void APlatformer3DCharacter::RegisterAttackHitbox(UPrimitiveComponent* Hitbox)
+void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
 {
 	AttackHitbox = Hitbox;
+	// Hitbox is usually attached to a weapon, which is probably a Mesh, check if it exists and set collision presets
+	UStaticMeshComponent* WeaponMesh = Cast<UStaticMeshComponent>(AttackHitbox->GetAttachParent());
+	if (WeaponMesh)
+	{
+		WeaponMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	}
+
+	// Set collision presets
+	AttackHitbox->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	AttackHitbox->SetCollisionProfileName(TEXT("Attacks"));
+	AttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &APlatformer3DCharacter::OnAttackOverlap);
+}
+
+void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this)
+	{
+		UGameplayStatics::ApplyDamage(OtherActor, 2.f, PlayerController, this, NULL);
+	}
 }
 
 void APlatformer3DCharacter::EnableAttackHitBox()
 {
 	if (AttackHitbox)
 	{
-		//AttackHitbox->OnComponentBeginOverlap();
+		AttackHitbox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
 }
 
@@ -560,6 +583,6 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 {
 	if (AttackHitbox)
 	{
-		//AttackHitbox->OnComponentBeginOverlap();
+		AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
