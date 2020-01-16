@@ -19,26 +19,56 @@ public:
 	// Sets default values for this character's properties
 	AEnemy_AI();
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
-private:
-	/*** Combat ***/
-	UShapeComponent* AttackHitbox;
-	UHealthActorComponent* HealthComponent;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	/*virtual void LockOn() override;
+	/** MY BEHAVIOUR **/
 
-	virtual float GetDistanceFromPlayer() override;
+	/*** Combat ***/
+	UFUNCTION()
+		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
-	virtual float GetDistanceFrom(AActor* OtherActor) override;*/
+	UFUNCTION()
+		void ReactToDamage();
+
+private:
+	/*** Movement ***/
+	UCharacterMovementComponent* CharacterMovementComponent;
+
+	/*** Player controller ***/
+	AController* AIController;
+
+	/*** Combat ***/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+		UHealthActorComponent* HealthComponent;
+
+	UShapeComponent* AttackHitbox;
+
+public:	
+	/*** Combat ***/
+	/*UFUNCTION(BlueprintCallable)
+		void RegisterAttackHitbox(UShapeComponent* Hitbox);
+
+	UFUNCTION(BlueprintCallable)
+		void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable)
+		void EnableAttackHitBox();
+
+	UFUNCTION(BlueprintCallable)
+		void DisableAttackHitBox();*/
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		UAnimMontage* DamageMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		UAnimMontage* DeathMontage;
+
 };

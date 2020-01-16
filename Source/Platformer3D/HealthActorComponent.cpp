@@ -21,6 +21,7 @@ void UHealthActorComponent::BeginPlay()
 
 	// ...
 	CurrentHealth = MaxHealth;
+	Alive = true;
 }
 
 
