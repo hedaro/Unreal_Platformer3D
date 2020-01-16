@@ -568,7 +568,7 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 {
 	if (OtherActor != this)
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, 2.f, GetController(), this, NULL);
+		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, PlayerController, this, NULL);
 	}
 }
 
@@ -590,7 +590,7 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (EventInstigator != GetController())
+	if (EventInstigator != PlayerController)
 	{
 		HealthComponent->DecreaseHealth(Damage);
 		ReactToDamage();

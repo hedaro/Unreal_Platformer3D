@@ -45,8 +45,6 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	virtual void BeginPlay() override;
-
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Landed(const FHitResult& Hit) override;
@@ -55,6 +53,8 @@ protected:
 
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
+
+	virtual void BeginPlay() override;
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -86,7 +86,7 @@ protected:
 
 
 	/** MY BEHAVIOUR **/
-protected:
+
 	/*** Movement ***/
 	UFUNCTION()
 		void DisablePlayerMoveInput();
@@ -142,6 +142,7 @@ protected:
 	UFUNCTION()
 		void StopAttackMontage();
 
+	/*** Combat ***/
 	UFUNCTION()
 		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
@@ -189,8 +190,10 @@ private:
 	FTimerHandle AttackTimerHandle;
 
 	/*** Combat ***/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+		UHealthActorComponent* HealthComponent;
+
 	UShapeComponent* AttackHitbox;
-	UHealthActorComponent* HealthComponent;
 	FTimerHandle DamageTimerHandle;
 
 public:
@@ -253,6 +256,9 @@ public:
 		TArray<UAnimMontage*> AttackMontages;
 
 	/*** Combat ***/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
+		float BaseDamage;
+
 	UFUNCTION(BlueprintCallable)
 		void RegisterAttackHitbox(UShapeComponent* Hitbox);
 
