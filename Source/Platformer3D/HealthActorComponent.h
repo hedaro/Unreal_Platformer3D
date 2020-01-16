@@ -36,4 +36,17 @@ private:
 public:
 	UPROPERTY(EditAnywhere)
 		float MaxHealth = 100;
+
+	UFUNCTION(BlueprintPure)
+		float GetCurrentHealth();
+
+	UFUNCTION(BlueprintPure)
+		bool IsAlive();
+
+	UFUNCTION(BlueprintCallable)
+		void DecreaseHealth(float Amount);
+
+	UFUNCTION(BlueprintCallable)
+		void RecoverHealth(float Amount);
+
 };

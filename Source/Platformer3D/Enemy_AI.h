@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 
 #include "LockOn_Interface.h"
+#include "HealthActorComponent.h"
 
 #include "Enemy_AI.generated.h"
 
@@ -21,6 +22,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+
+private:
+	/*** Combat ***/
+	UShapeComponent* AttackHitbox;
+	UHealthActorComponent* HealthComponent;
 
 public:	
 	// Called every frame

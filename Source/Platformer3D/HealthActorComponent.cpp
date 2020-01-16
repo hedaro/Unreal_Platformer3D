@@ -31,3 +31,24 @@ void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 	// ...
 }
+
+float UHealthActorComponent::GetCurrentHealth()
+{
+	return CurrentHealth;
+}
+
+bool UHealthActorComponent::IsAlive()
+{
+	return Alive;
+}
+
+void UHealthActorComponent::DecreaseHealth(float Amount)
+{
+	CurrentHealth = FMath::Clamp<float>(CurrentHealth - Amount, 0, MaxHealth);
+	Alive = CurrentHealth > 0;
+}
+
+void UHealthActorComponent::RecoverHealth(float Amount)
+{
+	CurrentHealth = FMath::Clamp<float>(CurrentHealth + Amount, 0, MaxHealth);
+}

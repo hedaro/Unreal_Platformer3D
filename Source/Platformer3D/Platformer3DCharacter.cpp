@@ -437,6 +437,7 @@ void APlatformer3DCharacter::LockOnTarget()
 		float ClosestTargetDistance = MinimumDistanceToTarget;
 
 		UWorld* World = GetWorld();
+		/*** Pending: Use: UGameplayStatics::GetAllActorsWithInterface() instead of iterator ***/
 		TActorIterator<AActor> It(World);
 		FHitResult HitResult;
 
@@ -567,7 +568,7 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 {
 	if (OtherActor != this)
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, 2.f, PlayerController, this, NULL);
+		UGameplayStatics::ApplyDamage(OtherActor, 2.f, GetController(), this, NULL);
 	}
 }
 
@@ -584,5 +585,37 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 	if (AttackHitbox)
 	{
 		AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+	if (EventInstigator != GetController())
+	{
+		HealthComponent->DecreaseHealth(Damage);
+		ReactToDamage();
+	}
+
+	return Damage;
+}
+
+void APlatformer3DCharacter::ReactToDamage()
+{
+	if (HealthComponent->IsAlive())
+	{
+		if (DamageMontage)
+		{
+			PlayAnimMontage(DamageMontage);
+		}
+	}
+	else
+	{
+		CharacterMovementComponent->DisableMovement();
+		// Lock off target and other stuff people do when they die
+		if (DeathMontage)
+		{
+			PlayAnimMontage(DeathMontage);
+		}
+		// Game Over or something
 	}
 }

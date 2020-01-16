@@ -142,6 +142,12 @@ protected:
 	UFUNCTION()
 		void StopAttackMontage();
 
+	UFUNCTION()
+		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
+	UFUNCTION()
+		void ReactToDamage();
+
 private:
 	/*** Movement ***/
 	UCharacterMovementComponent* CharacterMovementComponent;
@@ -185,7 +191,7 @@ private:
 	/*** Combat ***/
 	UShapeComponent* AttackHitbox;
 	UHealthActorComponent* HealthComponent;
-
+	FTimerHandle DamageTimerHandle;
 
 public:
 	/*** Camera Control ***/
@@ -258,5 +264,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void DisableAttackHitBox();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	UAnimMontage* DamageMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	UAnimMontage* DeathMontage;
 };
 
