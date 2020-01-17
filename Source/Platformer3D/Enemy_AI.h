@@ -3,15 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-
+#include "Platformer3DCharacter.h"
 #include "LockOn_Interface.h"
-#include "HealthActorComponent.h"
+#include "Perception/PawnSensingComponent.h"
 
 #include "Enemy_AI.generated.h"
 
 UCLASS()
-class PLATFORMER3D_API AEnemy_AI : public ACharacter, public ILockOn_Interface
+class PLATFORMER3D_API AEnemy_AI : public APlatformer3DCharacter, public ILockOn_Interface
 {
 	GENERATED_BODY()
 
@@ -31,44 +30,16 @@ protected:
 
 	/** MY BEHAVIOUR **/
 
-	/*** Combat ***/
 	UFUNCTION()
-		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
-
-	UFUNCTION()
-		void ReactToDamage();
+		void OnSeePawn(APawn* OtherPawn);
 
 private:
-	/*** Movement ***/
-	UCharacterMovementComponent* CharacterMovementComponent;
+	/*** AI ***/
+	bool SeenPlayer = false;
 
-	/*** Player controller ***/
-	AController* AIController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		UPawnSensingComponent* PawnSensingComponent;
 
-	/*** Combat ***/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
-		UHealthActorComponent* HealthComponent;
-
-	UShapeComponent* AttackHitbox;
-
-public:	
-	/*** Combat ***/
-	/*UFUNCTION(BlueprintCallable)
-		void RegisterAttackHitbox(UShapeComponent* Hitbox);
-
-	UFUNCTION(BlueprintCallable)
-		void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION(BlueprintCallable)
-		void EnableAttackHitBox();
-
-	UFUNCTION(BlueprintCallable)
-		void DisableAttackHitBox();*/
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		UAnimMontage* DamageMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		UAnimMontage* DeathMontage;
+public:
 
 };

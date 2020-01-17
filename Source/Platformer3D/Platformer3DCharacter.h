@@ -8,9 +8,7 @@
 #include "Engine/EngineTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/Public/TimerManager.h"
-#include "GameFramework/PlayerController.h"
-#include "InputCoreTypes.h"
-#include "LockOn_Interface.h"
+#include "GameFramework/Controller.h"
 #include "Animation/AnimMontage.h"
 #include "Components/ShapeComponent.h"
 #include "HealthActorComponent.h"
@@ -22,144 +20,42 @@ class PLATFORMER3D_API APlatformer3DCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
 public:
 	APlatformer3DCharacter();
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
-	float BaseTurnRate;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+		float BaseTurnRate;
 
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
-	float BaseLookUpRate;
-
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+		float BaseLookUpRate;
 
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Landed(const FHitResult& Hit) override;
 
 protected:
-
-	/** Resets HMD orientation in VR. */
-	void OnResetVR();
-
 	virtual void BeginPlay() override;
-
-	/** Called for forwards/backward input */
-	void MoveForward(float Value);
-
-	/** Called for side to side input */
-	void MoveRight(float Value);
-
-	/** 
-	 * Called via input to turn at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
-	void TurnAtRate(float Rate);
-
-	/**
-	 * Called via input to turn look up/down at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
-	void LookUpAtRate(float Rate);
-
-	/** Handler for when a touch input begins. */
-	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
-
-	/** Handler for when a touch input stops. */
-	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
-
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// End of APawn interface
-
 
 	/** MY BEHAVIOUR **/
 
 	/*** Movement ***/
-	UFUNCTION()
-		void DisablePlayerMoveInput();
-
-	UFUNCTION()
-		void EnablePlayerMoveInput();
-
-	void StartJump();
-
-	void EndJump();
-
-	void ZoomCamera(float Value);
-
-	UFUNCTION()
-		void StartDash();
-
-	UFUNCTION()
-		void EndDash();
-
-	UFUNCTION()
-		void ResetDash();
-
-	UFUNCTION()
-		void StartRun();
-
-	UFUNCTION()
-		void EndRun();
-
-	UFUNCTION()
-		void ToggleCameraMode();
-
-	UFUNCTION()
-		void RollDodge(FKey Key);
-
-	UFUNCTION()
-		void ExecuteRollDodge();
-
-	UFUNCTION()
-		void ResetRollDodgeAnimation();
-
-	UFUNCTION()
-		void LockOnTarget();
-
-	UFUNCTION()
-		void LockOffTarget();
-
-	UFUNCTION()
-		void StartAttack();
-
-	UFUNCTION()
-		void EndAttackLaunch();
-
-	UFUNCTION()
-		void StopAttackMontage();
-
-	/*** Combat ***/
-	UFUNCTION()
-		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
-
-	UFUNCTION()
-		void ReactToDamage();
-
-private:
-	/*** Movement ***/
 	UCharacterMovementComponent* CharacterMovementComponent;
 	FVector HorizontalSpeed;
 
-	/*** Player controller ***/
-	APlayerController* PlayerController;
-	FKey KeyBuffer;
+	UFUNCTION()
+		void DisableMoveInput();
 
-	/*** Camera Control ***/
-	int CameraMode = 0;
+	UFUNCTION()
+		void EnableMoveInput();
+
+	/*** Character controller ***/
+	AController* CharacterController;
+
+	/*** Lock On ***/
+	bool TargetLocked;
+	AActor* NearestTarget;
 
 	/*** Jump ***/
 	int JumpCount = 0;
@@ -169,15 +65,11 @@ private:
 	bool DashedOnAir = false;
 	bool IsDashing = false;
 	FTimerHandle DashTimerHandle;
-	
+
 	/*** Roll/Dodge ***/
 	FTimerHandle RollTimerHandle;
 	int RollDodgeAction = 0;
 	int RollDodgeAnimation = 0;
-
-	/*** Lock On ***/
-	bool TargetLocked;
-	AActor* NearestTarget;
 
 	/*** Attack ***/
 	bool IsAttacking = false;
@@ -186,23 +78,38 @@ private:
 	float AttackCooldown = 0.f;
 	float LaunchForce = 0.f;
 	float JumpForce = 0.f;
-	//UAnimInstance* AnimInstance;
 	FTimerHandle AttackTimerHandle;
 
 	/*** Combat ***/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
-		UHealthActorComponent* HealthComponent;
-
 	UShapeComponent* AttackHitbox;
 	FTimerHandle DamageTimerHandle;
 
-public:
-	/*** Camera Control ***/
-	UPROPERTY(EditAnywhere, Category=Camera)
-		FVector2D CameraZoomMinMax = FVector2D(100.0f, 400.0f);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+		UHealthActorComponent* HealthComponent;
 
-	UPROPERTY(EditAnywhere, Category = Camera)
-		float CameraZoomSpeed = 10.0f;
+public:
+	/*** Movement ***/
+
+	/**
+	 * Called via input to turn at a given rate.
+	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	 */
+	void TurnAtRate(float Rate);
+
+	/**
+	 * Called via input to turn look up/down at a given rate.
+	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	 */
+	void LookUpAtRate(float Rate);
+
+	/** Called for forwards/backward input */
+	void MoveForward(float Value);
+
+	/** Called for side to side input */
+	void MoveRight(float Value);
+
+	UFUNCTION()
+		virtual void LookAt(FVector Location, float Rate);
 
 	/*** Jump ***/
 	UPROPERTY(EditAnywhere, Category = Movement)
@@ -214,6 +121,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = Movement)
 		int MaxJumpCount = 1;
 
+	UFUNCTION()
+		void StartJump();
+
+	UFUNCTION()
+		void EndJump();
+
 	/*** Dash ***/
 	UPROPERTY(EditAnywhere, Category = Movement)
 		float DashSpeed = 6000.0f;
@@ -223,6 +136,15 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Movement)
 		float DashCooldownTime = 1.f;
+
+	UFUNCTION()
+		void StartDash();
+
+	UFUNCTION()
+		void EndDash();
+
+	UFUNCTION()
+		void ResetDash();
 
 	UFUNCTION(BlueprintPure)
 		bool GetIsDashing();
@@ -234,13 +156,34 @@ public:
 	UPROPERTY(EditAnywhere, Category = Movement)
 		float WalkSpeed = 300.f;
 
+	UFUNCTION()
+		void StartRun();
+
+	UFUNCTION()
+		void EndRun();
+
 	/*** Roll/Dodge ***/
 	UFUNCTION(BlueprintPure)
 		int GetRollDodgeAnimation();
 
+	UFUNCTION()
+		virtual void RollDodge();
+
+	UFUNCTION()
+		virtual void ExecuteRollDodge();
+
+	UFUNCTION()
+		virtual void ResetRollDodgeAnimation();
+
 	/*** LockOn ***/
 	UPROPERTY(EditAnywhere, Category = LockOn)
 		float MinimumDistanceToTarget = 2000;
+
+	UFUNCTION()
+		virtual void LockOnTarget(AActor* Target);
+
+	UFUNCTION()
+		virtual void LockOffTarget();
 
 	/*** Attack ***/
 	UFUNCTION(BlueprintCallable)
@@ -254,6 +197,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 		TArray<UAnimMontage*> AttackMontages;
+
+	UFUNCTION()
+		virtual void StartAttack();
+
+	UFUNCTION()
+		void EndAttackLaunch();
+
+	UFUNCTION()
+		void StopAttackMontage();
 
 	/*** Combat ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
@@ -276,5 +228,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	UAnimMontage* DeathMontage;
+
+	UFUNCTION()
+		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
+	UFUNCTION()
+		virtual void ReactToDamage();
 };
 

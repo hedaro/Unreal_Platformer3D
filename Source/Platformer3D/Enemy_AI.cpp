@@ -5,6 +5,9 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/ShapeComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemy_AI::AEnemy_AI()
@@ -12,10 +15,9 @@ AEnemy_AI::AEnemy_AI()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CharacterMovementComponent = GetCharacterMovement();
-
-	// Create Health Component
-	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("HEALTH"));
+	// Create Pawn Sensing Component
+	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
+	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy_AI::OnSeePawn);
 }
 
 // Called when the game starts or when spawned
@@ -28,7 +30,6 @@ void AEnemy_AI::BeginPlay()
 	//***** ¿¿¿MyInterface MUST be an interface class???  *****//
 	//this->GetClass()->ImplementsInterface(AEnemy_AI::StaticClass());
 
-	AIController = GetController();
 }
 
 // Called every frame
@@ -46,38 +47,12 @@ void AEnemy_AI::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 }
 
 /** MY BEHAVIOUR **/
-
-float AEnemy_AI::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 {
-	if (EventInstigator != AIController)
+	UE_LOG(LogTemp, Warning, TEXT("I CAN SEE YOU!"));
+	if (!SeenPlayer)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Took %f damage"), Damage);
-		HealthComponent->DecreaseHealth(Damage);
-		ReactToDamage();
-	}
+		SeenPlayer = true;
 
-	return Damage;
-}
-
-void AEnemy_AI::ReactToDamage()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Am i alive? %d"), HealthComponent->IsAlive());
-	UE_LOG(LogTemp, Warning, TEXT("Remaining health %f"), HealthComponent->GetCurrentHealth());
-	if (HealthComponent->IsAlive())
-	{
-		if (DamageMontage)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Damage montage: %s"), *DamageMontage->GetName());
-			PlayAnimMontage(DamageMontage);
-		}
-	}
-	else
-	{
-		CharacterMovementComponent->DisableMovement();
-		UE_LOG(LogTemp, Warning, TEXT("Death montage: %s"), *DeathMontage->GetName());
-		if (DeathMontage)
-		{
-			PlayAnimMontage(DeathMontage);
-		}
 	}
 }

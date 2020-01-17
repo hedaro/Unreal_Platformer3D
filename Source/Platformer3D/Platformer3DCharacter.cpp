@@ -1,17 +1,11 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "Platformer3DCharacter.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Animation/AnimInstance.h"
 #include "Components/StaticMeshComponent.h"
 
 #include "Kismet/KismetMathLibrary.h"
@@ -27,10 +21,6 @@ APlatformer3DCharacter::APlatformer3DCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
-
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -41,17 +31,6 @@ APlatformer3DCharacter::APlatformer3DCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 1.0f;
-
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Create Health Component
 	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("HEALTH"));
@@ -64,13 +43,7 @@ void APlatformer3DCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerController = GetWorld()->GetFirstPlayerController();
-
-	/*USkeletalMeshComponent* Mesh = FindComponentByClass<USkeletalMeshComponent>();
-	if (Mesh)
-	{
-		AnimInstance = Mesh->GetAnimInstance();
-	}*/
+	CharacterController = GetController();
 }
 
 void APlatformer3DCharacter::Tick(float DeltaTime)
@@ -84,11 +57,7 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 
 	if (TargetLocked || NearestTarget != nullptr)
 	{
-		FRotator ControlRotation = PlayerController->GetControlRotation();
-
-		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(FollowCamera->GetComponentLocation(), NearestTarget->GetActorLocation());
-		ControlRotation.Yaw = FMath::RInterpTo(ControlRotation, TargetRotation, DeltaTime, 0.0f).Yaw;
-		PlayerController->SetControlRotation(ControlRotation);
+		LookAt(NearestTarget->GetActorLocation(), DeltaTime);
 	}
 
 	// Ugly and hacky way to simulate a cooldown timer
@@ -96,67 +65,6 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 	{
 		AttackCooldown -= DeltaTime;
 	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void APlatformer3DCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-	// Set up gameplay key bindings
-	check(PlayerInputComponent);
-	//PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	//PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &APlatformer3DCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &APlatformer3DCharacter::MoveRight);
-
-	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
-	// "turn" handles devices that provide an absolute delta, such as a mouse.
-	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &APlatformer3DCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &APlatformer3DCharacter::LookUpAtRate);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &APlatformer3DCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &APlatformer3DCharacter::TouchStopped);
-
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &APlatformer3DCharacter::OnResetVR);
-
-	/** MY BEHAVIOUR **/
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlatformer3DCharacter::StartJump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlatformer3DCharacter::EndJump);
-
-	PlayerInputComponent->BindAxis("ZoomCamera", this, &APlatformer3DCharacter::ZoomCamera);
-	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &APlatformer3DCharacter::StartDash);
-
-	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &APlatformer3DCharacter::StartRun);
-	PlayerInputComponent->BindAction("Run", IE_Released, this, &APlatformer3DCharacter::EndRun);
-
-	PlayerInputComponent->BindAction("ToggleCameraMode", IE_Pressed, this, &APlatformer3DCharacter::ToggleCameraMode);
-
-	PlayerInputComponent->BindAction("RollDodge", IE_Pressed, this, &APlatformer3DCharacter::RollDodge);
-
-	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &APlatformer3DCharacter::StartAttack);
-	//PlayerInputComponent->BindAction("Attack", IE_Released, this, &APlatformer3DCharacter::EndAttack);
-}
-
-void APlatformer3DCharacter::OnResetVR()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
-}
-
-void APlatformer3DCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-		StartJump();
-}
-
-void APlatformer3DCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-		EndJump();
 }
 
 void APlatformer3DCharacter::TurnAtRate(float Rate)
@@ -169,6 +77,14 @@ void APlatformer3DCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void APlatformer3DCharacter::LookAt(FVector Location, float Rate) {
+	FRotator ControlRotation = CharacterController->GetControlRotation();
+
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
+	ControlRotation.Yaw = FMath::RInterpTo(ControlRotation, TargetRotation, Rate, 0.0f).Yaw;
+	CharacterController->SetControlRotation(ControlRotation);
 }
 
 void APlatformer3DCharacter::MoveForward(float Value)
@@ -200,14 +116,14 @@ void APlatformer3DCharacter::MoveRight(float Value)
 	}
 }
 
-void APlatformer3DCharacter::DisablePlayerMoveInput()
+void APlatformer3DCharacter::DisableMoveInput()
 {
-	PlayerController->SetIgnoreMoveInput(true);
+	CharacterController->SetIgnoreMoveInput(true);
 }
 
-void APlatformer3DCharacter::EnablePlayerMoveInput()
+void APlatformer3DCharacter::EnableMoveInput()
 {
-	PlayerController->ResetIgnoreMoveInput();
+	CharacterController->ResetIgnoreMoveInput();
 }
 
 void APlatformer3DCharacter::StartJump()
@@ -256,7 +172,7 @@ void APlatformer3DCharacter::StartDash()
 		StopAttackMontage();
 
 		// This blocks any imput, preventing any action, use other method if wanted to allow some actions while dashing
-		DisablePlayerMoveInput();
+		DisableMoveInput();
 
 		HorizontalSpeed = CharacterMovementComponent->Velocity;
 		HorizontalSpeed.Z = 0.0f;
@@ -276,7 +192,7 @@ void APlatformer3DCharacter::StartDash()
 
 void APlatformer3DCharacter::EndDash()
 {
-	EnablePlayerMoveInput();
+	EnableMoveInput();
 
 	CharacterMovementComponent->StopMovementImmediately();
 	CharacterMovementComponent->Velocity = HorizontalSpeed;
@@ -295,12 +211,6 @@ void APlatformer3DCharacter::ResetDash()
 bool APlatformer3DCharacter::GetIsDashing()
 {
 	return IsDashing;
-}
-
-void APlatformer3DCharacter::ZoomCamera(float Value)
-{
-	float newDistance = CameraBoom->TargetArmLength -= Value * CameraZoomSpeed;
-	CameraBoom->TargetArmLength = FMath::Clamp(newDistance, CameraZoomMinMax.X, CameraZoomMinMax.Y);
 }
 
 void APlatformer3DCharacter::Landed(const FHitResult& Hit)
@@ -322,41 +232,14 @@ void APlatformer3DCharacter::EndRun()
 	CharacterMovementComponent->MaxWalkSpeed = WalkSpeed;
 }
 
-void APlatformer3DCharacter::ToggleCameraMode()
+void APlatformer3DCharacter::RollDodge()
 {
-	switch (CameraMode)
+	// If RollDodgeAction can´t be deduced, and Animation isn't already playing
+	if (RollDodgeAction < 2 && RollDodgeAnimation == 0)
 	{
-	case 0:
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		bUseControllerRotationYaw = true;
-		CameraMode = 1;
-		LockOnTarget();
-		break;
-	case 1:
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		bUseControllerRotationYaw = false;
-		CameraMode = 0;
-		LockOffTarget();
-		break;
-	}
-}
-
-void APlatformer3DCharacter::RollDodge(FKey Key)
-{
-	// If LeftAlt or B button was pressed, and RollDodgeAction can´t be deduced, and Animation isn't already playing
-	if (Key == EKeys::LeftAlt || Key == EKeys::Gamepad_FaceButton_Right)
-	{
-		if (RollDodgeAction < 2 && RollDodgeAnimation == 0)
-		{
-			RollDodgeAction++;
-			GetWorldTimerManager().ClearTimer(RollTimerHandle);
-			GetWorldTimerManager().SetTimer(RollTimerHandle, this, &APlatformer3DCharacter::ExecuteRollDodge, 0.17f, false);
-		}
-	}
-	else
-	{
-		// If wanted to prevent action by setting a direction only AFTER pressing the action key, clear timer here.
-		KeyBuffer = Key;
+		RollDodgeAction++;
+		GetWorldTimerManager().ClearTimer(RollTimerHandle);
+		GetWorldTimerManager().SetTimer(RollTimerHandle, this, &APlatformer3DCharacter::ExecuteRollDodge, 0.17f, false);
 	}
 }
 
@@ -369,16 +252,9 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 		return;
 	}
 
-	FKey KeyNone;
-
 	if (RollDodgeAction >= 2)
 	{
 		RollDodgeAction = 2;
-	}
-
-	if (!PlayerController->IsInputKeyDown(KeyBuffer))
-	{
-		KeyBuffer = KeyNone;
 	}
 
 	// Stop any montage playing, it should already be on an overridable state
@@ -386,16 +262,14 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
-	RollDodgeAnimation = ((RollDodgeAction - 1) * 4) * (KeyBuffer != KeyNone);
+	RollDodgeAnimation = ((RollDodgeAction - 1) * 4);
 
-	if (CameraMode == 0)
+	//if (!TargetLocked)
 	{
-		if (KeyBuffer != KeyNone)
-		{
-			RollDodgeAnimation += 1;
-		}
+		RollDodgeAnimation += 1;
 	}
-	else
+	/***** Find a way to remove dependance on specific keys!!!!!!!!!! *****/
+	/*else
 	{
 		if (KeyBuffer == EKeys::W || KeyBuffer == EKeys::Gamepad_LeftStick_Up)
 		{
@@ -413,7 +287,7 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 		{
 			RollDodgeAnimation += 4;
 		}
-	}
+	}*/
 
 	float ResetTimer = RollDodgeAnimation <= 4 ? 0.7 : 0.3;
 	GetWorldTimerManager().SetTimer(RollTimerHandle, this, &APlatformer3DCharacter::ResetRollDodgeAnimation, ResetTimer, false);
@@ -430,47 +304,10 @@ int APlatformer3DCharacter::GetRollDodgeAnimation()
 	return RollDodgeAnimation;
 }
 
-void APlatformer3DCharacter::LockOnTarget()
-{	
-	if (!TargetLocked)
-	{
-		float ClosestTargetDistance = MinimumDistanceToTarget;
-
-		UWorld* World = GetWorld();
-		/*** Pending: Use: UGameplayStatics::GetAllActorsWithInterface() instead of iterator ***/
-		TActorIterator<AActor> It(World);
-		FHitResult HitResult;
-
-		for (It; It; ++It)
-		{
-			if ((*It)->GetClass()->ImplementsInterface(ULockOn_Interface::StaticClass()))
-			{
-				/***** If you're using a BP interface, you need to use ScriptInterfaceCast instead of an InterfaceCast.
-						...
-						However, the best way to use interfaces is with the IMyInterface::Execute_MyFunction,
-						because that handles both the native and BP cases via the same path.
-						https://answers.unrealengine.com/questions/43038/buginerfacecast-returns-null-for-blueprint-classes.html
-				*****/
-				// ILockOn_Interface* Target = Cast<ILockOn_Interface>(*It);
-
-				float DistanceToTarget = GetDistanceTo(*It);
-				if (DistanceToTarget < ClosestTargetDistance)
-				{
-					FCollisionQueryParams TraceParameters(FName(TEXT("")), false, this);
-
-					if (World->LineTraceSingleByChannel(HitResult, GetActorLocation(), (*It)->GetActorLocation(), ECC_PhysicsBody, TraceParameters))
-					{
-						if (HitResult.Actor.Get() == *It)
-						{
-							ClosestTargetDistance = DistanceToTarget;
-							NearestTarget = *It;
-							TargetLocked = true;
-						}
-					}
-				}
-			}
-		}
-	}
+void APlatformer3DCharacter::LockOnTarget(AActor* Target)
+{
+	NearestTarget = Target;
+	TargetLocked = true;
 }
 
 void APlatformer3DCharacter::LockOffTarget()
@@ -487,7 +324,7 @@ void APlatformer3DCharacter::StartAttack()
 		IsAttacking = true;
 		SaveAttack = true;
 
-		DisablePlayerMoveInput();
+		DisableMoveInput();
 
 		/***** Missing set launch force and jump force for each montage *****/
 		LaunchForce = 500.f;
@@ -516,7 +353,7 @@ void APlatformer3DCharacter::ResetCombo()
 	ComboCount = 0;
 	JumpForce = 0.f;
 	LaunchForce = 0.f;
-	EnablePlayerMoveInput();
+	EnableMoveInput();
 }
 
 void APlatformer3DCharacter::ApplyAttackLaunch()
@@ -538,13 +375,6 @@ void APlatformer3DCharacter::StopAttackMontage()
 {
 	StopAnimMontage(AttackMontages[ComboCount]);
 	ResetCombo();
-
-	/***** This i an alternative way to do it, while overriding the blendout time, if AnimInstance is needed uncoment declaration and assignment in BeginPlay() *****/
-	/*if (AnimInstance && AnimInstance->Montage_IsPlaying(AttackMontages[ComboCount]))
-	{
-		AnimInstance->Montage_Stop(0.f, AttackMontages[ComboCount]);
-		ResetCombo();
-	}*/
 }
 
 void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
@@ -568,7 +398,7 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 {
 	if (OtherActor != this)
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, PlayerController, this, NULL);
+		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, CharacterController, this, NULL);
 	}
 }
 
@@ -590,7 +420,7 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (EventInstigator != PlayerController)
+	if (EventInstigator != CharacterController)
 	{
 		HealthComponent->DecreaseHealth(Damage);
 		ReactToDamage();
