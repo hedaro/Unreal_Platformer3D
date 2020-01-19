@@ -6,11 +6,11 @@
 #include "GameFramework/Character.h"
 
 #include "Engine/EngineTypes.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/Public/TimerManager.h"
 #include "GameFramework/Controller.h"
 #include "Animation/AnimMontage.h"
 #include "Components/ShapeComponent.h"
+#include "AttackSystemComponent.h"
 #include "HealthActorComponent.h"
 
 #include "Platformer3DCharacter.generated.h"
@@ -41,7 +41,6 @@ protected:
 	/** MY BEHAVIOUR **/
 
 	/*** Movement ***/
-	UCharacterMovementComponent* CharacterMovementComponent;
 	FVector HorizontalSpeed;
 
 	UFUNCTION()
@@ -50,8 +49,11 @@ protected:
 	UFUNCTION()
 		void EnableMoveInput();
 
-	/*** Character controller ***/
-	AController* CharacterController;
+	UFUNCTION()
+		void DisableLookupInput();
+
+	UFUNCTION()
+		void EnableLookupMoveInput();
 
 	/*** Lock On ***/
 	bool TargetLocked;
@@ -79,6 +81,8 @@ protected:
 	float LaunchForce = 0.f;
 	float JumpForce = 0.f;
 	FTimerHandle AttackTimerHandle;
+	UPROPERTY(Category=Character, VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
+		UAttackSystemComponent* AttackSystem;
 
 	/*** Combat ***/
 	UShapeComponent* AttackHitbox;
@@ -89,17 +93,10 @@ protected:
 
 public:
 	/*** Movement ***/
-
-	/**
-	 * Called via input to turn at a given rate.
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
+	/** Called via input to turn at a given rate. */
 	void TurnAtRate(float Rate);
 
-	/**
-	 * Called via input to turn look up/down at a given rate.
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
+	/** Called via input to turn look up/down at a given rate. */
 	void LookUpAtRate(float Rate);
 
 	/** Called for forwards/backward input */
@@ -187,29 +184,26 @@ public:
 
 	/*** Attack ***/
 	UFUNCTION(BlueprintCallable)
-		void SaveComboAttack();
-
-	UFUNCTION(BlueprintCallable)
-		void ResetCombo();
-
-	UFUNCTION(BlueprintCallable)
-		void ApplyAttackLaunch();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		TArray<UAnimMontage*> AttackMontages;
-
-	UFUNCTION()
 		virtual void StartAttack();
 
-	UFUNCTION()
-		void EndAttackLaunch();
+	UFUNCTION(BlueprintCallable)
+		virtual void EndAttack();
 
-	UFUNCTION()
-		void StopAttackMontage();
+	UFUNCTION(BlueprintCallable)
+		void SaveCombo();
+	
+	UFUNCTION(BlueprintCallable)
+		void ApplyAttackLaunch();
 
 	/*** Combat ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
 		float BaseDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		UAnimMontage* DamageMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		UAnimMontage* DeathMontage;
 
 	UFUNCTION(BlueprintCallable)
 		void RegisterAttackHitbox(UShapeComponent* Hitbox);
@@ -222,12 +216,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void DisableAttackHitBox();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-	UAnimMontage* DamageMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-	UAnimMontage* DeathMontage;
+	
+	UFUNCTION(BlueprintCallable)
+		virtual void DoDamage(AActor* Target);
 
 	UFUNCTION()
 		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;

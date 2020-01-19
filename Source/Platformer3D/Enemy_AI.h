@@ -28,18 +28,28 @@ protected:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	/** MY BEHAVIOUR **/
 
+	/** MY BEHAVIOUR **/
 	UFUNCTION()
 		void OnSeePawn(APawn* OtherPawn);
 
+	UFUNCTION()
+		void SeekPlayer();
+
 private:
 	/*** AI ***/
+	ACharacter* PlayerCharacter;
+
 	bool SeenPlayer = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		UPawnSensingComponent* PawnSensingComponent;
 
-public:
+	/*** Combat ***/
+	bool Flinch;
 
+public:
+	virtual void DoDamage(AActor* Target) override;
+
+	virtual void ReactToDamage() override;
 };

@@ -3,8 +3,8 @@
 #include "Enemy_AI.h"
 
 #include "Engine/World.h"
-#include "GameFramework/PlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AIController.h"
 #include "Components/ShapeComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -30,6 +30,8 @@ void AEnemy_AI::BeginPlay()
 	//***** ¿¿¿MyInterface MUST be an interface class???  *****//
 	//this->GetClass()->ImplementsInterface(AEnemy_AI::StaticClass());
 
+	PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	Cast<AAIController>(Controller)->bSetControlRotationFromPawnOrientation = 0;
 }
 
 // Called every frame
@@ -37,6 +39,10 @@ void AEnemy_AI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (SeenPlayer)
+	{
+		MoveForward(1.f);
+	}
 }
 
 // Called to bind functionality to input
@@ -49,10 +55,45 @@ void AEnemy_AI::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 /** MY BEHAVIOUR **/
 void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("I CAN SEE YOU!"));
-	if (!SeenPlayer)
+	if (OtherPawn == PlayerCharacter && HealthComponent->IsAlive())
 	{
 		SeenPlayer = true;
-
+		if (!NearestTarget)
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			bUseControllerRotationYaw = true;
+			LockOnTarget(OtherPawn);
+		}
 	}
+}
+
+void AEnemy_AI::SeekPlayer()
+{
+	if (HealthComponent->IsAlive() && !Flinch)
+	{
+		if (IsAttacking)
+		{
+			GetCharacterMovement()->StopMovementImmediately();
+		}
+		else
+		{
+			MoveForward(1.f);
+		}
+	}
+}
+
+void AEnemy_AI::DoDamage(AActor* Target)
+{
+	if (Target == PlayerCharacter)
+	{
+		UGameplayStatics::ApplyDamage(Target, BaseDamage, Controller, this, NULL);
+	}
+}
+
+void AEnemy_AI::ReactToDamage()
+{
+	Super::ReactToDamage();
+
+	LockOffTarget();
+	SeenPlayer = false;
 }

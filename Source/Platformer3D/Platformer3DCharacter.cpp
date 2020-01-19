@@ -16,8 +16,6 @@
 
 APlatformer3DCharacter::APlatformer3DCharacter()
 {
-	CharacterMovementComponent = GetCharacterMovement();
-
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -32,8 +30,11 @@ APlatformer3DCharacter::APlatformer3DCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 1.0f;
 
+	// Create Attack System Component
+	AttackSystem = CreateDefaultSubobject<UAttackSystemComponent>(TEXT("Attack System"));
+
 	// Create Health Component
-	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("HEALTH"));
+	HealthComponent = CreateDefaultSubobject<UHealthActorComponent>(TEXT("Health"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -43,27 +44,21 @@ void APlatformer3DCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CharacterController = GetController();
+	Controller = GetController();
 }
 
 void APlatformer3DCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CharacterMovementComponent->IsFalling() && !IsDashing && CharacterMovementComponent->Velocity.Z < 0.0f)
+	if (GetCharacterMovement()->IsFalling() && !IsDashing && GetCharacterMovement()->Velocity.Z < 0.0f)
 	{
-		CharacterMovementComponent->GravityScale = FallSpeedRatio;
+		GetCharacterMovement()->GravityScale = FallSpeedRatio;
 	}
 
-	if (TargetLocked || NearestTarget != nullptr)
+	if (TargetLocked && NearestTarget)
 	{
 		LookAt(NearestTarget->GetActorLocation(), DeltaTime);
-	}
-
-	// Ugly and hacky way to simulate a cooldown timer
-	if (AttackCooldown > 0.f)
-	{
-		AttackCooldown -= DeltaTime;
 	}
 }
 
@@ -80,11 +75,11 @@ void APlatformer3DCharacter::LookUpAtRate(float Rate)
 }
 
 void APlatformer3DCharacter::LookAt(FVector Location, float Rate) {
-	FRotator ControlRotation = CharacterController->GetControlRotation();
+	FRotator ControlRotation = Controller->GetControlRotation();
 
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
 	ControlRotation.Yaw = FMath::RInterpTo(ControlRotation, TargetRotation, Rate, 0.0f).Yaw;
-	CharacterController->SetControlRotation(ControlRotation);
+	Controller->SetControlRotation(ControlRotation);
 }
 
 void APlatformer3DCharacter::MoveForward(float Value)
@@ -118,12 +113,22 @@ void APlatformer3DCharacter::MoveRight(float Value)
 
 void APlatformer3DCharacter::DisableMoveInput()
 {
-	CharacterController->SetIgnoreMoveInput(true);
+	Controller->SetIgnoreMoveInput(true);
 }
 
 void APlatformer3DCharacter::EnableMoveInput()
 {
-	CharacterController->ResetIgnoreMoveInput();
+	Controller->ResetIgnoreMoveInput();
+}
+
+void APlatformer3DCharacter::DisableLookupInput()
+{
+	Controller->SetIgnoreLookInput(true);
+}
+
+void APlatformer3DCharacter::EnableLookupMoveInput()
+{
+	Controller->ResetIgnoreLookInput();
 }
 
 void APlatformer3DCharacter::StartJump()
@@ -132,15 +137,15 @@ void APlatformer3DCharacter::StartJump()
 		return;
 
 	// Stop any montage playing, it should already be on an overridable state
-	StopAttackMontage();
+	AttackSystem->CancelAttack();
 
 	Jump();
 
-	if (CharacterMovementComponent->IsFalling() && JumpCount < MaxJumpCount)
+	if (GetCharacterMovement()->IsFalling() && JumpCount < MaxJumpCount)
 	{
-		FVector JumpSpeed = FVector(0.0f, 0.0f, CharacterMovementComponent->JumpZVelocity);
+		FVector JumpSpeed = FVector(0.0f, 0.0f, GetCharacterMovement()->JumpZVelocity);
 
-		CharacterMovementComponent->GravityScale = 1;
+		GetCharacterMovement()->GravityScale = 1;
 		LaunchCharacter(JumpSpeed, false, true);
 		JumpCount++;
 	}
@@ -158,9 +163,9 @@ void APlatformer3DCharacter::EndJump()
 
 	StopJumping();
 
-	if (CharacterMovementComponent->IsFalling() && !IsDashing)
+	if (GetCharacterMovement()->IsFalling() && !IsDashing)
 	{
-		CharacterMovementComponent->GravityScale = FastFallSpeedRatio;
+		GetCharacterMovement()->GravityScale = FastFallSpeedRatio;
 	}
 }
 
@@ -169,23 +174,23 @@ void APlatformer3DCharacter::StartDash()
 	if (CanDash && !DashedOnAir && !SaveAttack)
 	{
 		// Stop any montage playing, it should already be on an overridable state
-		StopAttackMontage();
+		AttackSystem->CancelAttack();
 
 		// This blocks any imput, preventing any action, use other method if wanted to allow some actions while dashing
 		DisableMoveInput();
 
-		HorizontalSpeed = CharacterMovementComponent->Velocity;
+		HorizontalSpeed = GetCharacterMovement()->Velocity;
 		HorizontalSpeed.Z = 0.0f;
 		FVector DashDirection = FVector(GetActorForwardVector().X, GetActorForwardVector().Y, 0.f);
 
-		CharacterMovementComponent->BrakingFrictionFactor = 0.f;
-		CharacterMovementComponent->GravityScale = 0.f;
-		CharacterMovementComponent->Velocity = DashDirection.GetSafeNormal() * DashSpeed;
+		GetCharacterMovement()->BrakingFrictionFactor = 0.f;
+		GetCharacterMovement()->GravityScale = 0.f;
+		GetCharacterMovement()->Velocity = DashDirection.GetSafeNormal() * DashSpeed;
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlatformer3DCharacter::EndDash, DashDuration, false);
 
 		IsDashing = true;
 		CanDash = false;
-		if (CharacterMovementComponent->IsFalling())
+		if (GetCharacterMovement()->IsFalling())
 			DashedOnAir = true;
 	}
 }
@@ -194,10 +199,10 @@ void APlatformer3DCharacter::EndDash()
 {
 	EnableMoveInput();
 
-	CharacterMovementComponent->StopMovementImmediately();
-	CharacterMovementComponent->Velocity = HorizontalSpeed;
-	CharacterMovementComponent->BrakingFrictionFactor = 2.f;
-	CharacterMovementComponent->GravityScale = 1.f;
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->Velocity = HorizontalSpeed;
+	GetCharacterMovement()->BrakingFrictionFactor = 2.f;
+	GetCharacterMovement()->GravityScale = 1.f;
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlatformer3DCharacter::ResetDash, DashCooldownTime, false);
 
 	IsDashing = false;
@@ -216,20 +221,20 @@ bool APlatformer3DCharacter::GetIsDashing()
 void APlatformer3DCharacter::Landed(const FHitResult& Hit)
 {
 	ACharacter::Landed(Hit);
-
-	CharacterMovementComponent->GravityScale = 1;
+	ResetJumpState();
+	GetCharacterMovement()->GravityScale = 1;
 	JumpCount = 0;
 	DashedOnAir = false;
 }
 
 void APlatformer3DCharacter::StartRun()
 {
-	CharacterMovementComponent->MaxWalkSpeed = RunSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
 void APlatformer3DCharacter::EndRun()
 {
-	CharacterMovementComponent->MaxWalkSpeed = WalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void APlatformer3DCharacter::RollDodge()
@@ -246,7 +251,7 @@ void APlatformer3DCharacter::RollDodge()
 void APlatformer3DCharacter::ExecuteRollDodge()
 {
 	//If character is doing a blocking animation, they can´t roll/dodge (possible to make this check on RollDodge() to prevent creation of unnecessary timers).
-	if (CharacterMovementComponent->IsFalling() || SaveAttack)
+	if (GetCharacterMovement()->IsFalling() || SaveAttack)
 	{
 		ResetRollDodgeAnimation();
 		return;
@@ -258,7 +263,7 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 	}
 
 	// Stop any montage playing, it should already be on an overridable state
-	StopAttackMontage();
+	AttackSystem->CancelAttack();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
@@ -318,63 +323,30 @@ void APlatformer3DCharacter::LockOffTarget()
 
 void APlatformer3DCharacter::StartAttack()
 {
-	// Ugly and hacky way to simulate a cooldown timer, check Tick() function for update
-	if (!SaveAttack && AttackCooldown <= 0.f)
-	{			
-		IsAttacking = true;
-		SaveAttack = true;
-
+	UE_LOG(LogTemp, Warning, TEXT("Can attack %d"), AttackSystem->CanAttack());
+	if (AttackSystem->CanAttack())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("WHY CAN I ATTACK?"));
 		DisableMoveInput();
-
-		/***** Missing set launch force and jump force for each montage *****/
-		LaunchForce = 500.f;
-
-		ComboCount = (ComboCount + 1) % AttackMontages.Num();
-
-		AttackCooldown = 0.8;
-	
-		// There may be a better place to make these checks and a way to handle if any of them fails
-		if (AttackMontages.Num() > 0 && ComboCount < AttackMontages.Num() && AttackMontages[ComboCount])
-		{
-			PlayAnimMontage(AttackMontages[ComboCount]);
-		}
+		AttackSystem->NextAttack();
 	}
 }
 
-void APlatformer3DCharacter::SaveComboAttack()
+void APlatformer3DCharacter::EndAttack()
 {
-	SaveAttack = false;
+	AttackSystem->ResetCombo();
+	EnableMoveInput();
 }
 
-void APlatformer3DCharacter::ResetCombo()
+void APlatformer3DCharacter::SaveCombo()
 {
-	IsAttacking = false;
-	SaveAttack = false;
-	ComboCount = 0;
-	JumpForce = 0.f;
-	LaunchForce = 0.f;
-	EnableMoveInput();
+	UE_LOG(LogTemp, Warning, TEXT("SAVING COMBO"));
+	AttackSystem->SaveComboAttack();
 }
 
 void APlatformer3DCharacter::ApplyAttackLaunch()
 {
-	FVector AttackDirection = GetActorForwardVector() * LaunchForce + GetActorUpVector() * JumpForce;
-
-	CharacterMovementComponent->GroundFriction = 0.f;
-	CharacterMovementComponent->Velocity = AttackDirection;
-	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
-	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &APlatformer3DCharacter::EndAttackLaunch, 0.25f, false);
-}
-
-void APlatformer3DCharacter::EndAttackLaunch()
-{
-	CharacterMovementComponent->GroundFriction = 8.f;
-}
-
-void APlatformer3DCharacter::StopAttackMontage()
-{
-	StopAnimMontage(AttackMontages[ComboCount]);
-	ResetCombo();
+	AttackSystem->ApplyAttackLaunch();
 }
 
 void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
@@ -398,7 +370,7 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 {
 	if (OtherActor != this)
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, BaseDamage, CharacterController, this, NULL);
+		DoDamage(OtherActor);
 	}
 }
 
@@ -418,9 +390,14 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 	}
 }
 
+void APlatformer3DCharacter::DoDamage(AActor* Target)
+{
+	UGameplayStatics::ApplyDamage(Target, BaseDamage, Controller, this, NULL);
+}
+
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (EventInstigator != CharacterController)
+	if (EventInstigator != Controller)
 	{
 		HealthComponent->DecreaseHealth(Damage);
 		ReactToDamage();
@@ -440,10 +417,11 @@ void APlatformer3DCharacter::ReactToDamage()
 	}
 	else
 	{
-		CharacterMovementComponent->DisableMovement();
+		GetCharacterMovement()->DisableMovement();
 		// Lock off target and other stuff people do when they die
 		if (DeathMontage)
 		{
+			DeathMontage->bEnableAutoBlendOut = false;
 			PlayAnimMontage(DeathMontage);
 		}
 		// Game Over or something

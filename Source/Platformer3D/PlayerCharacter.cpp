@@ -8,7 +8,9 @@
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "LockOn_Interface.h"
 
@@ -39,7 +41,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	CharacterController = GetWorld()->GetFirstPlayerController();
+	Controller = GetWorld()->GetFirstPlayerController();
 }
 
 // Called every frame
@@ -84,11 +86,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)
 {
-	FRotator ControlRotation = CharacterController->GetControlRotation();
+	FRotator ControlRotation = Controller->GetControlRotation();
 
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(FollowCamera->GetComponentLocation(), Location);
 	ControlRotation.Yaw = FMath::RInterpTo(ControlRotation, TargetRotation, Rate, 0.0f).Yaw;
-	CharacterController->SetControlRotation(ControlRotation);
+	Controller->SetControlRotation(ControlRotation);
 }
 
 void APlayerCharacter::ZoomCamera(float Value)
@@ -144,7 +146,7 @@ void APlayerCharacter::RollDodge()
 void APlayerCharacter::ExecuteRollDodge()
 {
 	//If character is doing a blocking animation, they can´t roll/dodge (possible to make this check on RollDodge() to prevent creation of unnecessary timers).
-	if (CharacterMovementComponent->IsFalling() || SaveAttack)
+	if (GetCharacterMovement()->IsFalling() || SaveAttack)
 	{
 		ResetRollDodgeAnimation();
 		return;
@@ -160,13 +162,13 @@ void APlayerCharacter::ExecuteRollDodge()
 
 	/***** Find a way to remove dependance on specific keys!!!!!!!!!! *****/
 	// If Left Alt key or B button were pressed
-	if (!Cast<APlayerController>(CharacterController)->IsInputKeyDown(KeyBuffer))
+	if (!Cast<APlayerController>(Controller)->IsInputKeyDown(KeyBuffer))
 	{
 		KeyBuffer = KeyNone;
 	}
 
 	// Stop any montage playing, it should already be on an overridable state
-	StopAttackMontage();
+	AttackSystem->CancelAttack();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
@@ -247,3 +249,12 @@ void APlayerCharacter::FindNearestTarget()
 	}
 }
 
+void APlayerCharacter::ReactToDamage()
+{
+	Super::ReactToDamage();
+
+	if (!HealthComponent->IsAlive())
+	{
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+	}
+}
