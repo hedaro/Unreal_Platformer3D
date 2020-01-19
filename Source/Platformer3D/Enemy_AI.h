@@ -49,7 +49,12 @@ private:
 	bool Flinch;
 
 public:
+	UPROPERTY(EditAnywhere, Category = AI)
+		FVector2D DistanceToPlayerMinMax;
+
 	virtual void DoDamage(AActor* Target) override;
 
 	virtual void ReactToDamage() override;
+
+	float DistanceToPlayer();
 };

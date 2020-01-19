@@ -41,7 +41,7 @@ private:
 	ACharacter* OwnerCharacterRef;
 
 	/*** Attack ***/
-	bool IsAttacking = false;
+	bool bIsAttacking = false;
 	bool SaveAttack = false;
 	int ComboCount = 0;
 	float AttackCooldownTimer;
@@ -81,5 +81,10 @@ public:
 
 	UFUNCTION()
 		void CancelAttack();
+
+	UFUNCTION()
+		bool IsAttacking();
 		
+	UFUNCTION()
+		bool IsAttackAnimation();
 };

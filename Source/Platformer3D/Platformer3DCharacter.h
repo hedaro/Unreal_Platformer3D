@@ -74,13 +74,6 @@ protected:
 	int RollDodgeAnimation = 0;
 
 	/*** Attack ***/
-	bool IsAttacking = false;
-	bool SaveAttack = false;
-	int ComboCount = 0;
-	float AttackCooldown = 0.f;
-	float LaunchForce = 0.f;
-	float JumpForce = 0.f;
-	FTimerHandle AttackTimerHandle;
 	UPROPERTY(Category=Character, VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		UAttackSystemComponent* AttackSystem;
 
@@ -209,14 +202,14 @@ public:
 		void RegisterAttackHitbox(UShapeComponent* Hitbox);
 
 	UFUNCTION(BlueprintCallable)
-		void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION(BlueprintCallable)
 		void EnableAttackHitBox();
 
 	UFUNCTION(BlueprintCallable)
 		void DisableAttackHitBox();
-	
+
+	UFUNCTION(BlueprintCallable)
+		void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	UFUNCTION(BlueprintCallable)
 		virtual void DoDamage(AActor* Target);
 

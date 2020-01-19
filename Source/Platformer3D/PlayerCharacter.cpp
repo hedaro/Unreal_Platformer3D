@@ -62,9 +62,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	//PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &APlatformer3DCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	//PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APlatformer3DCharacter::LookUpAtRate);
 
 	/** MY BEHAVIOUR **/
@@ -146,7 +146,7 @@ void APlayerCharacter::RollDodge()
 void APlayerCharacter::ExecuteRollDodge()
 {
 	//If character is doing a blocking animation, they can´t roll/dodge (possible to make this check on RollDodge() to prevent creation of unnecessary timers).
-	if (GetCharacterMovement()->IsFalling() || SaveAttack)
+	if (GetCharacterMovement()->IsFalling() || AttackSystem->IsAttackAnimation())
 	{
 		ResetRollDodgeAnimation();
 		return;
@@ -169,6 +169,8 @@ void APlayerCharacter::ExecuteRollDodge()
 
 	// Stop any montage playing, it should already be on an overridable state
 	AttackSystem->CancelAttack();
+
+	EnableMoveInput();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played

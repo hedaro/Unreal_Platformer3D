@@ -15,8 +15,12 @@ AEnemy_AI::AEnemy_AI()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Setting MinMax Distance to player
+	DistanceToPlayerMinMax = FVector2D(200.f, 1000.f);
+
 	// Create Pawn Sensing Component
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
+	PawnSensingComponent->SetPeripheralVisionAngle(90.f);
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy_AI::OnSeePawn);
 }
 
@@ -30,6 +34,7 @@ void AEnemy_AI::BeginPlay()
 	//***** ¿¿¿MyInterface MUST be an interface class???  *****//
 	//this->GetClass()->ImplementsInterface(AEnemy_AI::StaticClass());
 
+	PawnSensingComponent->SightRadius = DistanceToPlayerMinMax.Y;
 	PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	Cast<AAIController>(Controller)->bSetControlRotationFromPawnOrientation = 0;
 }
@@ -39,9 +44,9 @@ void AEnemy_AI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (SeenPlayer)
+	if (HealthComponent->IsAlive() && SeenPlayer)
 	{
-		MoveForward(1.f);
+		SeekPlayer();
 	}
 }
 
@@ -55,7 +60,7 @@ void AEnemy_AI::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 /** MY BEHAVIOUR **/
 void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 {
-	if (OtherPawn == PlayerCharacter && HealthComponent->IsAlive())
+	if (!SeenPlayer && OtherPawn == PlayerCharacter && HealthComponent->IsAlive())
 	{
 		SeenPlayer = true;
 		if (!NearestTarget)
@@ -69,15 +74,29 @@ void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 
 void AEnemy_AI::SeekPlayer()
 {
-	if (HealthComponent->IsAlive() && !Flinch)
+	if (HealthComponent->IsAlive() && !AttackSystem->IsAttackAnimation() && !Flinch)
 	{
-		if (IsAttacking)
+		//if (HealthComponent->GetCurrentHealth() <= 50.f)
+		//{
+		//	// Make some low health actions
+		//}
+		//else 
+		if (DistanceToPlayer() >= DistanceToPlayerMinMax.X)
 		{
-			GetCharacterMovement()->StopMovementImmediately();
+			//Cast<AAIController>(Controller)->MoveToActor(PlayerCharacter, 5.f);
+			MoveForward(1.0);
 		}
 		else
 		{
-			MoveForward(1.f);
+			StartAttack();
+		}
+		
+		if (DistanceToPlayer() > DistanceToPlayerMinMax.Y)
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			bUseControllerRotationYaw = false;
+			LockOffTarget();
+			SeenPlayer = false;
 		}
 	}
 }
@@ -94,6 +113,14 @@ void AEnemy_AI::ReactToDamage()
 {
 	Super::ReactToDamage();
 
-	LockOffTarget();
-	SeenPlayer = false;
+	// Why does it stop when getting hit and why it doesnt cause damage to player (Functions are actually base class)
+	if (!HealthComponent->IsAlive())
+	{
+		SeenPlayer = false;
+	}
+}
+
+float AEnemy_AI::DistanceToPlayer()
+{
+	return GetDistanceTo(PlayerCharacter);
 }

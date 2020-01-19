@@ -45,7 +45,7 @@ void UAttackSystemComponent::NextAttack()
 	// Ugly and hacky way to simulate a cooldown timer, check Tick() function for update
 	AttackCooldownTimer = AttackCooldown;
 
-	IsAttacking = true;
+	bIsAttacking = true;
 	SaveAttack = true;
 
 	// There may be a better place to make these checks and a way to handle if any of them fails
@@ -59,13 +59,12 @@ void UAttackSystemComponent::NextAttack()
 
 void UAttackSystemComponent::SaveComboAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("COMBO SAVED"));
 	SaveAttack = false;
 }
 
 void UAttackSystemComponent::ResetCombo()
 {
-	IsAttacking = false;
+	bIsAttacking = false;
 	SaveAttack = false;
 	ComboCount = 0;
 }
@@ -95,10 +94,20 @@ void UAttackSystemComponent::EndAttackLaunch()
 
 void UAttackSystemComponent::CancelAttack()
 {
-	ResetCombo();
 	if (OwnerCharacterRef && AttacksArray.Num() > 0 && AttacksArray[ComboCount].AnimMontage)
 	{
 		OwnerCharacterRef->StopAnimMontage(AttacksArray[ComboCount].AnimMontage);
 	}
+
+	ResetCombo();
 }
 
+bool UAttackSystemComponent::IsAttacking()
+{
+	return bIsAttacking;
+}
+
+bool UAttackSystemComponent::IsAttackAnimation()
+{
+	return SaveAttack;
+}

@@ -56,7 +56,9 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 		GetCharacterMovement()->GravityScale = FallSpeedRatio;
 	}
 
-	if (TargetLocked && NearestTarget)
+	/***** Should camera be able to keep track of target even when performing blocking actions??? *****/
+	/***** In any case, player shouldn't change rotation *****/
+	if (TargetLocked && NearestTarget && !AttackSystem->IsAttacking() && !IsDashing && RollDodgeAnimation == 0)
 	{
 		LookAt(NearestTarget->GetActorLocation(), DeltaTime);
 	}
@@ -64,8 +66,11 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 
 void APlatformer3DCharacter::TurnAtRate(float Rate)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	if (!TargetLocked)
+	{
+		// calculate delta for this frame from the rate information
+		AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void APlatformer3DCharacter::LookUpAtRate(float Rate)
@@ -133,11 +138,13 @@ void APlatformer3DCharacter::EnableLookupMoveInput()
 
 void APlatformer3DCharacter::StartJump()
 {
-	if (IsDashing || RollDodgeAnimation != 0 || SaveAttack)
+	if (IsDashing || RollDodgeAnimation != 0 || AttackSystem->IsAttackAnimation())
 		return;
 
 	// Stop any montage playing, it should already be on an overridable state
 	AttackSystem->CancelAttack();
+
+	EnableMoveInput();
 
 	Jump();
 
@@ -158,7 +165,7 @@ void APlatformer3DCharacter::StartJump()
 
 void APlatformer3DCharacter::EndJump()
 {
-	if (IsDashing || RollDodgeAnimation != 0 || SaveAttack)
+	if (IsDashing || RollDodgeAnimation != 0 || AttackSystem->IsAttackAnimation())
 		return;
 
 	StopJumping();
@@ -171,7 +178,7 @@ void APlatformer3DCharacter::EndJump()
 
 void APlatformer3DCharacter::StartDash()
 {
-	if (CanDash && !DashedOnAir && !SaveAttack)
+	if (CanDash && !DashedOnAir && !AttackSystem->IsAttackAnimation() && RollDodgeAnimation == 0)
 	{
 		// Stop any montage playing, it should already be on an overridable state
 		AttackSystem->CancelAttack();
@@ -251,7 +258,7 @@ void APlatformer3DCharacter::RollDodge()
 void APlatformer3DCharacter::ExecuteRollDodge()
 {
 	//If character is doing a blocking animation, they can´t roll/dodge (possible to make this check on RollDodge() to prevent creation of unnecessary timers).
-	if (GetCharacterMovement()->IsFalling() || SaveAttack)
+	if (GetCharacterMovement()->IsFalling() || AttackSystem->IsAttackAnimation())
 	{
 		ResetRollDodgeAnimation();
 		return;
@@ -264,6 +271,8 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 
 	// Stop any montage playing, it should already be on an overridable state
 	AttackSystem->CancelAttack();
+
+	EnableMoveInput();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
@@ -323,10 +332,8 @@ void APlatformer3DCharacter::LockOffTarget()
 
 void APlatformer3DCharacter::StartAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Can attack %d"), AttackSystem->CanAttack());
 	if (AttackSystem->CanAttack())
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("WHY CAN I ATTACK?"));
 		DisableMoveInput();
 		AttackSystem->NextAttack();
 	}
@@ -340,7 +347,6 @@ void APlatformer3DCharacter::EndAttack()
 
 void APlatformer3DCharacter::SaveCombo()
 {
-	UE_LOG(LogTemp, Warning, TEXT("SAVING COMBO"));
 	AttackSystem->SaveComboAttack();
 }
 
@@ -366,14 +372,6 @@ void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
 	AttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &APlatformer3DCharacter::OnAttackOverlap);
 }
 
-void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor != this)
-	{
-		DoDamage(OtherActor);
-	}
-}
-
 void APlatformer3DCharacter::EnableAttackHitBox()
 {
 	if (AttackHitbox)
@@ -390,6 +388,15 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 	}
 }
 
+void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit actor"));
+		DoDamage(OtherActor);
+	}
+}
+
 void APlatformer3DCharacter::DoDamage(AActor* Target)
 {
 	UGameplayStatics::ApplyDamage(Target, BaseDamage, Controller, this, NULL);
@@ -397,6 +404,7 @@ void APlatformer3DCharacter::DoDamage(AActor* Target)
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Took Hit"));
 	if (EventInstigator != Controller)
 	{
 		HealthComponent->DecreaseHealth(Damage);
@@ -408,10 +416,13 @@ float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const
 
 void APlatformer3DCharacter::ReactToDamage()
 {
+	/***** I should change this name to a more accurate one *****/
+	AttackSystem->SaveComboAttack();
 	if (HealthComponent->IsAlive())
 	{
 		if (DamageMontage)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Damaged"));
 			PlayAnimMontage(DamageMontage);
 		}
 	}
@@ -421,6 +432,7 @@ void APlatformer3DCharacter::ReactToDamage()
 		// Lock off target and other stuff people do when they die
 		if (DeathMontage)
 		{
+			LockOffTarget();
 			DeathMontage->bEnableAutoBlendOut = false;
 			PlayAnimMontage(DeathMontage);
 		}
