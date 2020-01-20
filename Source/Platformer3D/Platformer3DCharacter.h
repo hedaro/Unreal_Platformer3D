@@ -98,6 +98,18 @@ public:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
+	void ResetMoveState();
+
+	UFUNCTION()
+		void SetCrouchState(bool DoCrouch);
+
+	UFUNCTION()
+		void ToggleCrouchState();
+
+	UFUNCTION(BlueprintPure)
+		bool GetIsCrouching();
+
+	/*** Camera ***/
 	UFUNCTION()
 		virtual void LookAt(FVector Location, float Rate);
 

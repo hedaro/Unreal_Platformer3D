@@ -82,6 +82,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("RollDodge", IE_Pressed, this, &APlayerCharacter::RollDodgeInput);
 
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &APlatformer3DCharacter::StartAttack);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlatformer3DCharacter::ToggleCrouchState);
 }
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)
@@ -122,7 +124,7 @@ void APlayerCharacter::RollDodgeInput(FKey Key)
 {
 	/***** Find a way to remove dependance on specific keys!!!!!!!!!! *****/
 	// If Left Alt key or B button were pressed
-	if (Key == EKeys::LeftAlt || Key == EKeys::Gamepad_FaceButton_Right)
+	if (Key == EKeys::X || Key == EKeys::Gamepad_FaceButton_Right)
 	{
 		RollDodge();
 	}
@@ -167,10 +169,7 @@ void APlayerCharacter::ExecuteRollDodge()
 		KeyBuffer = KeyNone;
 	}
 
-	// Stop any montage playing, it should already be on an overridable state
-	AttackSystem->CancelAttack();
-
-	EnableMoveInput();
+	ResetMoveState();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played

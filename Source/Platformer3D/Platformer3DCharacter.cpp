@@ -116,6 +116,45 @@ void APlatformer3DCharacter::MoveRight(float Value)
 	}
 }
 
+void APlatformer3DCharacter::ResetMoveState()
+{
+	AttackSystem->CancelAttack();
+	SetCrouchState(false);
+
+	EnableMoveInput();
+}
+
+void APlatformer3DCharacter::SetCrouchState(bool DoCrouch)
+{
+	/***** Can crouch property has to be set via blueprint since there is no method to change it via ACharacterMovementComponent once created and ACharacter creates it's own component *****/
+	if (DoCrouch)
+	{
+		Crouch();
+	}
+	else
+	{
+		UnCrouch();
+	}
+}
+
+void APlatformer3DCharacter::ToggleCrouchState()
+{
+	/***** Can crouch property has to be set via blueprint since there is no method to change it via ACharacterMovementComponent once created and ACharacter creates it's own component *****/
+	if (GetMovementComponent()->IsCrouching())
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+}
+
+bool APlatformer3DCharacter::GetIsCrouching()
+{
+	return GetMovementComponent()->IsCrouching();
+}
+
 void APlatformer3DCharacter::DisableMoveInput()
 {
 	Controller->SetIgnoreMoveInput(true);
@@ -141,10 +180,7 @@ void APlatformer3DCharacter::StartJump()
 	if (IsDashing || RollDodgeAnimation != 0 || AttackSystem->IsAttackAnimation())
 		return;
 
-	// Stop any montage playing, it should already be on an overridable state
-	AttackSystem->CancelAttack();
-
-	EnableMoveInput();
+	ResetMoveState();
 
 	Jump();
 
@@ -181,7 +217,7 @@ void APlatformer3DCharacter::StartDash()
 	if (CanDash && !DashedOnAir && !AttackSystem->IsAttackAnimation() && RollDodgeAnimation == 0)
 	{
 		// Stop any montage playing, it should already be on an overridable state
-		AttackSystem->CancelAttack();
+		ResetMoveState();
 
 		// This blocks any imput, preventing any action, use other method if wanted to allow some actions while dashing
 		DisableMoveInput();
@@ -269,13 +305,9 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 		RollDodgeAction = 2;
 	}
 
-	// Stop any montage playing, it should already be on an overridable state
-	AttackSystem->CancelAttack();
-
-	EnableMoveInput();
+	ResetMoveState();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
-	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
 	RollDodgeAnimation = ((RollDodgeAction - 1) * 4);
 
 	//if (!TargetLocked)
