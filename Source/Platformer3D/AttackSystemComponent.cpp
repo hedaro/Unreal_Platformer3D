@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "GameFramework/CharacterMovementComponent.h"
 #include "AttackSystemComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UAttackSystemComponent::UAttackSystemComponent()
@@ -51,9 +51,9 @@ void UAttackSystemComponent::NextAttack()
 	// There may be a better place to make these checks and a way to handle if any of them fails
 	if (OwnerCharacterRef && AttacksArray.Num() > 0 && ComboCount < AttacksArray.Num() && AttacksArray[ComboCount].AnimMontage)
 	{
-		ComboCount = (ComboCount + 1) % AttacksArray.Num(); // Is it right to call before or after?????????????
-
 		OwnerCharacterRef->PlayAnimMontage(AttacksArray[ComboCount].AnimMontage);
+
+		ComboCount = (ComboCount + 1) % AttacksArray.Num(); // Is it right to call before or after?????????????
 	}
 }
 
@@ -94,9 +94,13 @@ void UAttackSystemComponent::EndAttackLaunch()
 
 void UAttackSystemComponent::CancelAttack()
 {
-	if (OwnerCharacterRef && AttacksArray.Num() > 0 && AttacksArray[ComboCount].AnimMontage)
+	if (OwnerCharacterRef && AttacksArray.Num() > 0)
 	{
-		OwnerCharacterRef->StopAnimMontage(AttacksArray[ComboCount].AnimMontage);
+		ComboCount = (ComboCount + AttacksArray.Num() - 1) % AttacksArray.Num();
+		if (AttacksArray[ComboCount].AnimMontage)
+		{
+			OwnerCharacterRef->StopAnimMontage(AttacksArray[ComboCount].AnimMontage);
+		}
 	}
 
 	ResetCombo();
@@ -110,4 +114,14 @@ bool UAttackSystemComponent::IsAttacking()
 bool UAttackSystemComponent::IsAttackAnimation()
 {
 	return SaveAttack;
+}
+
+int UAttackSystemComponent::GetMaxCombo()
+{
+	return AttacksArray.Num();
+}
+
+int UAttackSystemComponent::GetCurrentCombo()
+{
+	return ComboCount;
 }

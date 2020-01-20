@@ -15,7 +15,7 @@ struct FAttack
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere)
 		UAnimMontage* AnimMontage;
 
 	UPROPERTY(EditAnywhere)
@@ -87,4 +87,10 @@ public:
 		
 	UFUNCTION()
 		bool IsAttackAnimation();
+
+	UFUNCTION()
+		int GetMaxCombo();
+
+	UFUNCTION()
+		int GetCurrentCombo();
 };
