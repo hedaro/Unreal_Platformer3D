@@ -39,7 +39,6 @@ protected:
 private:
 	/*** AI ***/
 	ACharacter* PlayerCharacter;
-
 	bool SeenPlayer = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))

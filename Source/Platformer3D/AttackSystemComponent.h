@@ -93,4 +93,7 @@ public:
 
 	UFUNCTION()
 		int GetCurrentCombo();
+
+	UFUNCTION()
+		float GetAttackDamage();
 };

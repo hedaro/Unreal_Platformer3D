@@ -53,13 +53,14 @@ void UAttackSystemComponent::NextAttack()
 	{
 		OwnerCharacterRef->PlayAnimMontage(AttacksArray[ComboCount].AnimMontage);
 
-		ComboCount = (ComboCount + 1) % AttacksArray.Num(); // Is it right to call before or after?????????????
+		// ComboCount = (ComboCount + 1) % AttacksArray.Num(); // Is it right to call before or after?????????????
 	}
 }
 
 void UAttackSystemComponent::SaveComboAttack()
 {
 	SaveAttack = false;
+	ComboCount = (ComboCount + 1) % AttacksArray.Num();
 }
 
 void UAttackSystemComponent::ResetCombo()
@@ -96,10 +97,10 @@ void UAttackSystemComponent::CancelAttack()
 {
 	if (OwnerCharacterRef && AttacksArray.Num() > 0)
 	{
-		ComboCount = (ComboCount + AttacksArray.Num() - 1) % AttacksArray.Num();
-		if (AttacksArray[ComboCount].AnimMontage)
+		int CurrentAttack = GetCurrentCombo();
+		if (AttacksArray[CurrentAttack].AnimMontage)
 		{
-			OwnerCharacterRef->StopAnimMontage(AttacksArray[ComboCount].AnimMontage);
+			OwnerCharacterRef->StopAnimMontage(AttacksArray[CurrentAttack].AnimMontage);
 		}
 	}
 
@@ -123,5 +124,16 @@ int UAttackSystemComponent::GetMaxCombo()
 
 int UAttackSystemComponent::GetCurrentCombo()
 {
-	return ComboCount;
+	return SaveAttack ? ComboCount : bIsAttacking ? (ComboCount + AttacksArray.Num() - 1) % AttacksArray.Num() : 0;
+}
+
+float UAttackSystemComponent::GetAttackDamage()
+{
+	if (bIsAttacking && AttacksArray.Num() > 0)
+	{
+		int CurrentAttack = GetCurrentCombo();
+		return AttacksArray[CurrentAttack].Damage;
+	}
+
+	return 0.f;
 }

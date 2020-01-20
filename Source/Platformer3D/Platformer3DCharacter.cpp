@@ -392,19 +392,19 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 {
 	if (OtherActor != this)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit actor"));
 		DoDamage(OtherActor);
 	}
 }
 
 void APlatformer3DCharacter::DoDamage(AActor* Target)
 {
-	UGameplayStatics::ApplyDamage(Target, BaseDamage, Controller, this, NULL);
+	float Damage = UKismetMathLibrary::RandomFloatInRange(BaseDamage, AttackSystem->GetAttackDamage());
+	UGameplayStatics::ApplyDamage(Target, Damage, Controller, this, NULL);
 }
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Took Hit"));
+	UE_LOG(LogTemp, Warning, TEXT("Took %f damage"), Damage);
 	if (EventInstigator != Controller)
 	{
 		HealthComponent->DecreaseHealth(Damage);
@@ -416,15 +416,15 @@ float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const
 
 void APlatformer3DCharacter::ReactToDamage()
 {
-	/***** I should change this name to a more accurate one *****/
-	AttackSystem->SaveComboAttack();
+	AttackSystem->CancelAttack();
+
 	if (HealthComponent->IsAlive())
 	{
 		if (DamageMontage)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Damaged"));
 			PlayAnimMontage(DamageMontage);
 		}
+		EnableMoveInput();
 	}
 	else
 	{
