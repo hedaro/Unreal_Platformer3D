@@ -33,9 +33,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		float CurrentHealth;
 
-public:
 	UPROPERTY(EditAnywhere)
 		float MaxHealth = 100;
+
+public:
+	UFUNCTION(BlueprintPure)
+		float GetMaxHealth();
 
 	UFUNCTION(BlueprintPure)
 		float GetCurrentHealth();

@@ -230,5 +230,11 @@ public:
 
 	UFUNCTION()
 		virtual void ReactToDamage();
+
+	UFUNCTION(BlueprintPure)
+		float GetCurrentHealth();
+
+	UFUNCTION(BlueprintPure)
+		float GetCurrentHealthPercent();
 };
 

@@ -471,3 +471,23 @@ void APlatformer3DCharacter::ReactToDamage()
 		// Game Over or something
 	}
 }
+
+float APlatformer3DCharacter::GetCurrentHealth()
+{
+	if (HealthComponent)
+	{
+		return HealthComponent->GetCurrentHealth();
+	}
+
+	return 0.f;
+}
+
+float APlatformer3DCharacter::GetCurrentHealthPercent()
+{
+	if (HealthComponent && HealthComponent->GetMaxHealth() > 0)
+	{
+		return HealthComponent->GetCurrentHealth() / HealthComponent->GetMaxHealth();
+	}
+
+	return 0.f;
+}

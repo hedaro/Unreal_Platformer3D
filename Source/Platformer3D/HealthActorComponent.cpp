@@ -38,6 +38,11 @@ float UHealthActorComponent::GetCurrentHealth()
 	return CurrentHealth;
 }
 
+float UHealthActorComponent::GetMaxHealth()
+{
+	return MaxHealth;
+}
+
 bool UHealthActorComponent::IsAlive()
 {
 	return Alive;
