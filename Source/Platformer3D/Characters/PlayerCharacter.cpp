@@ -252,9 +252,9 @@ void APlayerCharacter::FindNearestTarget()
 	}
 }
 
-void APlayerCharacter::ReactToDamage()
+void APlayerCharacter::ReactToDamage(float AttackForce)
 {
-	Super::ReactToDamage();
+	Super::ReactToDamage(AttackForce);
 
 	if (!HealthComponent->IsAlive())
 	{

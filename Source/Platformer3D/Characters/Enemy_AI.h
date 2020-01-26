@@ -55,15 +55,13 @@ private:
 
 	UEnemyGUI_Widget* GUIWidget;
 
-	bool Flinch;
-
 public:
 	UPROPERTY(EditAnywhere, Category = AI)
 		FVector2D DistanceToPlayerMinMax;
 
 	virtual void DoDamage(AActor* Target) override;
 
-	virtual void ReactToDamage() override;
+	virtual void ReactToDamage(float AttackForce) override;
 
 	float DistanceToPlayer();
 };

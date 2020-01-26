@@ -13,11 +13,12 @@
 // Custom libraries
 #include "Components/AttackSystemComponent.h"
 #include "Components/HealthActorComponent.h"
+#include "Interfaces/DamagableObject_Interface.h"
 
 #include "Platformer3DCharacter.generated.h"
 
 UCLASS(config=Game)
-class PLATFORMER3D_API APlatformer3DCharacter : public ACharacter
+class PLATFORMER3D_API APlatformer3DCharacter : public ACharacter, public IDamagableObject_Interface
 {
 	GENERATED_BODY()
 
@@ -75,17 +76,21 @@ protected:
 	int RollDodgeAnimation = 0;
 
 	/*** Attack ***/
+	FTimerHandle AttackTimerHandle;
+
 	UPROPERTY(Category=Character, VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		UAttackSystemComponent* AttackSystem;
-
-	FTimerHandle AttackTimerHandle;
 
 	/*** Combat ***/
 	UShapeComponent* AttackHitbox;
 	FTimerHandle DamageTimerHandle;
+	bool IsFlinching;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
 		UHealthActorComponent* HealthComponent;
+
+	UFUNCTION()
+		void EndReactToDamage();
 
 public:
 	/*** Movement ***/
@@ -238,7 +243,7 @@ public:
 		virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
 	UFUNCTION()
-		virtual void ReactToDamage();
+		virtual void ReactToDamage(float AttackForce) override;
 
 	UFUNCTION(BlueprintPure)
 		float GetCurrentHealth();

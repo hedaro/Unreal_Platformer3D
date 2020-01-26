@@ -91,7 +91,7 @@ void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 
 void AEnemy_AI::SeekPlayer()
 {
-	if (HealthComponent->IsAlive() && !AttackSystem->IsAttackAnimation() && !Flinch)
+	if (HealthComponent->IsAlive() && !AttackSystem->IsAttackAnimation() && !IsFlinching)
 	{
 		//if (HealthComponent->GetCurrentHealth() <= 50.f)
 		//{
@@ -122,13 +122,14 @@ void AEnemy_AI::DoDamage(AActor* Target)
 {
 	if (Target == PlayerCharacter)
 	{
-		UGameplayStatics::ApplyDamage(Target, BaseDamage, Controller, this, NULL);
+		float Damage = UKismetMathLibrary::RandomFloatInRange(BaseDamage, AttackSystem->GetAttackDamage());
+		UGameplayStatics::ApplyDamage(Target, Damage, Controller, this, NULL);
 	}
 }
 
-void AEnemy_AI::ReactToDamage()
+void AEnemy_AI::ReactToDamage(float AttackForce)
 {
-	Super::ReactToDamage();
+	Super::ReactToDamage(AttackForce);
 
 	if (!HealthComponent->IsAlive())
 	{

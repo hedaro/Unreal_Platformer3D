@@ -78,5 +78,5 @@ public:
 	/*** Movement ***/
 	virtual void LookAt(FVector Location, float Rate) override;
 
-	virtual void ReactToDamage() override;
+	virtual void ReactToDamage(float AttackForce) override;
 };

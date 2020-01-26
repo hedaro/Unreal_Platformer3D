@@ -53,7 +53,7 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetCharacterMovement()->IsFalling() && !IsDashing && GetCharacterMovement()->Velocity.Z < 0.0f && !AttackSystem->IsAttackAnimation())
+	if (GetCharacterMovement()->IsFalling() && !IsDashing && GetCharacterMovement()->Velocity.Z < 0.0f && !AttackSystem->IsAttackAnimation() && !IsFlinching)
 	{
 		GetCharacterMovement()->GravityScale = FallSpeedRatio;
 	}
@@ -369,7 +369,6 @@ void APlatformer3DCharacter::StartAttack()
 	if (AttackSystem->CanAttack())
 	{
 		DisableMoveInput();
-		GetCharacterMovement()->StopMovementImmediately();
 		if (GetCharacterMovement()->IsFalling())
 		{
 			GetCharacterMovement()->GravityScale = 0.f;
@@ -377,6 +376,7 @@ void APlatformer3DCharacter::StartAttack()
 		}
 		else
 		{
+			GetCharacterMovement()->StopMovementImmediately();
 			AttackSystem->NormalAttack();
 		}
 	}
@@ -406,18 +406,19 @@ void APlatformer3DCharacter::SaveCombo()
 
 void APlatformer3DCharacter::ApplyAttackLaunch()
 {
-	// AttackSystem->ApplyAttackLaunch();
-
 	FAttack CurrentAttack = AttackSystem->GetCurrentAttack();
 	GetCharacterMovement()->GroundFriction = 0.f;
-	GetCharacterMovement()->Velocity = GetActorForwardVector() * CurrentAttack.LaunchForce;
+	GetCharacterMovement()->GravityScale = CurrentAttack.JumpForce > 0.f ? 0.f : 1.f;
+	GetCharacterMovement()->Velocity = GetActorForwardVector() * CurrentAttack.AdvanceForce;
 	GetCharacterMovement()->Launch(GetActorUpVector() * CurrentAttack.JumpForce);
 	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
-	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &APlatformer3DCharacter::EndAttackLaunch, 0.25f, false);
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &APlatformer3DCharacter::EndAttackLaunch, 1.f, false);
 }
 
 void APlatformer3DCharacter::EndAttackLaunch()
 {
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->GravityScale = 1.f;
 	GetCharacterMovement()->GroundFriction = 8.f;
 }
 
@@ -459,7 +460,49 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 	if (OtherActor != this)
 	{
 		DoDamage(OtherActor);
+		if (OtherActor->GetClass()->ImplementsInterface(UDamagableObject_Interface::StaticClass()))
+		{
+			if (GetCharacterMovement()->IsFalling())
+			{
+				if (GetCharacterMovement()->Velocity.Z < 0.0f)
+				{
+					GetCharacterMovement()->StopMovementImmediately();
+				}
+				GetCharacterMovement()->GravityScale = 0.f;
+			}
+			Cast<IDamagableObject_Interface>(OtherActor)->ReactToDamage(AttackSystem->GetCurrentAttack().LaunchForce);
+		}
 	}
+}
+
+void APlatformer3DCharacter::ReactToDamage(float AttackForce)
+{
+	IDamagableObject_Interface::ReactToDamage(AttackForce);
+
+	AttackSystem->CancelAttack();
+
+	if (HealthComponent->IsAlive())
+	{
+		if (DamageMontage)
+		{
+			GetCharacterMovement()->StopMovementImmediately();
+			DisableMoveInput();
+			GetCharacterMovement()->GravityScale = 0.f;
+			IsFlinching = true;
+			PlayAnimMontage(DamageMontage);
+			GetCharacterMovement()->Launch(GetActorUpVector() * AttackForce);
+		}
+	}
+	GetWorldTimerManager().ClearTimer(DamageTimerHandle);
+	GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 1.f, false);
+}
+
+void APlatformer3DCharacter::EndReactToDamage()
+{
+	GetCharacterMovement()->StopMovementImmediately();
+	EnableMoveInput();
+	IsFlinching = false;
+	GetCharacterMovement()->GravityScale = 1.f;
 }
 
 void APlatformer3DCharacter::DoDamage(AActor* Target)
@@ -473,38 +516,22 @@ float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const
 	if (EventInstigator != Controller)
 	{
 		HealthComponent->DecreaseHealth(Damage);
-		ReactToDamage();
+		if (!HealthComponent->IsAlive())
+		{
+			GetCharacterMovement()->DisableMovement();
+			// Lock off target and other stuff people do when they die
+			if (DeathMontage)
+			{
+				LockOffTarget();
+				DeathMontage->bEnableAutoBlendOut = false;
+				PlayAnimMontage(DeathMontage);
+			}
+			// Game Over or something
+		}
 	}
 
 	return Damage;
 }
-
-void APlatformer3DCharacter::ReactToDamage()
-{
-	AttackSystem->CancelAttack();
-
-	if (HealthComponent->IsAlive())
-	{
-		if (DamageMontage)
-		{
-			PlayAnimMontage(DamageMontage);
-		}
-		EnableMoveInput();
-	}
-	else
-	{
-		GetCharacterMovement()->DisableMovement();
-		// Lock off target and other stuff people do when they die
-		if (DeathMontage)
-		{
-			LockOffTarget();
-			DeathMontage->bEnableAutoBlendOut = false;
-			PlayAnimMontage(DeathMontage);
-		}
-		// Game Over or something
-	}
-}
-
 float APlatformer3DCharacter::GetCurrentHealth()
 {
 	if (HealthComponent)

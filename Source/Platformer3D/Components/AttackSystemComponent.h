@@ -26,6 +26,9 @@ struct FAttack
 		float LaunchForce;
 
 	UPROPERTY(EditAnywhere)
+		float AdvanceForce;
+
+	UPROPERTY(EditAnywhere)
 		float JumpForce;
 
 	UPROPERTY(EditAnywhere)
