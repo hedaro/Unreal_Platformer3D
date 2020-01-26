@@ -1,6 +1,8 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "Platformer3DCharacter.h"
+
+// Engine libraries
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
@@ -51,7 +53,7 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetCharacterMovement()->IsFalling() && !IsDashing && GetCharacterMovement()->Velocity.Z < 0.0f)
+	if (GetCharacterMovement()->IsFalling() && !IsDashing && GetCharacterMovement()->Velocity.Z < 0.0f && !AttackSystem->IsAttackAnimation())
 	{
 		GetCharacterMovement()->GravityScale = FallSpeedRatio;
 	}
@@ -367,13 +369,33 @@ void APlatformer3DCharacter::StartAttack()
 	if (AttackSystem->CanAttack())
 	{
 		DisableMoveInput();
-		AttackSystem->NextAttack();
+		GetCharacterMovement()->StopMovementImmediately();
+		if (GetCharacterMovement()->IsFalling())
+		{
+			GetCharacterMovement()->GravityScale = 0.f;
+			AttackSystem->AerialAttack();
+		}
+		else
+		{
+			AttackSystem->NormalAttack();
+		}
+	}
+}
+
+void APlatformer3DCharacter::StartHeavyAttack()
+{
+	if (AttackSystem->CanAttack() && !GetCharacterMovement()->IsFalling())
+	{
+		DisableMoveInput();
+		GetCharacterMovement()->StopMovementImmediately();
+		AttackSystem->HeavyAttack();
 	}
 }
 
 void APlatformer3DCharacter::EndAttack()
 {
 	AttackSystem->ResetCombo();
+	GetCharacterMovement()->GravityScale = 1.f;
 	EnableMoveInput();
 }
 
@@ -384,7 +406,19 @@ void APlatformer3DCharacter::SaveCombo()
 
 void APlatformer3DCharacter::ApplyAttackLaunch()
 {
-	AttackSystem->ApplyAttackLaunch();
+	// AttackSystem->ApplyAttackLaunch();
+
+	FAttack CurrentAttack = AttackSystem->GetCurrentAttack();
+	GetCharacterMovement()->GroundFriction = 0.f;
+	GetCharacterMovement()->Velocity = GetActorForwardVector() * CurrentAttack.LaunchForce;
+	GetCharacterMovement()->Launch(GetActorUpVector() * CurrentAttack.JumpForce);
+	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &APlatformer3DCharacter::EndAttackLaunch, 0.25f, false);
+}
+
+void APlatformer3DCharacter::EndAttackLaunch()
+{
+	GetCharacterMovement()->GroundFriction = 8.f;
 }
 
 void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
@@ -436,7 +470,6 @@ void APlatformer3DCharacter::DoDamage(AActor* Target)
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Took %f damage"), Damage);
 	if (EventInstigator != Controller)
 	{
 		HealthComponent->DecreaseHealth(Damage);

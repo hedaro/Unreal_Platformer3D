@@ -2,16 +2,17 @@
 
 #pragma once
 
+// Engine libraries
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-
 #include "Engine/EngineTypes.h"
 #include "Engine/Public/TimerManager.h"
 #include "GameFramework/Controller.h"
 #include "Animation/AnimMontage.h"
 #include "Components/ShapeComponent.h"
-#include "AttackSystemComponent.h"
-#include "HealthActorComponent.h"
+// Custom libraries
+#include "Components/AttackSystemComponent.h"
+#include "Components/HealthActorComponent.h"
 
 #include "Platformer3DCharacter.generated.h"
 
@@ -76,6 +77,8 @@ protected:
 	/*** Attack ***/
 	UPROPERTY(Category=Character, VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		UAttackSystemComponent* AttackSystem;
+
+	FTimerHandle AttackTimerHandle;
 
 	/*** Combat ***/
 	UShapeComponent* AttackHitbox;
@@ -192,6 +195,9 @@ public:
 		virtual void StartAttack();
 
 	UFUNCTION(BlueprintCallable)
+		virtual void StartHeavyAttack();
+
+	UFUNCTION(BlueprintCallable)
 		virtual void EndAttack();
 
 	UFUNCTION(BlueprintCallable)
@@ -199,6 +205,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 		void ApplyAttackLaunch();
+
+	UFUNCTION(BlueprintCallable)
+		void EndAttackLaunch();
 
 	/*** Combat ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)

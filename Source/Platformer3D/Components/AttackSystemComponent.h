@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimMontage.h"
+#include "Enums/AttackTypes.h"
 
 #include "AttackSystemComponent.generated.h"
 
@@ -26,6 +27,9 @@ struct FAttack
 
 	UPROPERTY(EditAnywhere)
 		float JumpForce;
+
+	UPROPERTY(EditAnywhere)
+		EAttackType AttackType;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -43,9 +47,12 @@ private:
 	/*** Attack ***/
 	bool bIsAttacking = false;
 	bool SaveAttack = false;
-	int ComboCount = 0;
+	int NormalComboCount = 0;
+	int HeavyComboCount = 0;
+	int AerialComboCount = 0;
 	float AttackCooldownTimer;
 	FTimerHandle AttackTimerHandle;
+	EAttackType CurrentComboType;
 
 protected:
 	// Called when the game starts
@@ -56,7 +63,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		TArray<FAttack> AttacksArray;
+		TArray<FAttack> NormalAttacksArray;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		TArray<FAttack> HeavyAttacksArray;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		TArray<FAttack> AerialAttacksArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 		float AttackCooldown = 0.f;
@@ -65,19 +78,19 @@ public:
 		bool CanAttack();
 
 	UFUNCTION()
-		void NextAttack();
+		void NormalAttack();
+
+	UFUNCTION()
+		void HeavyAttack();
+
+	UFUNCTION()
+		void AerialAttack();
 
 	UFUNCTION(BlueprintCallable)
 		void SaveComboAttack();
 
 	UFUNCTION(BlueprintCallable)
 		void ResetCombo();
-
-	UFUNCTION(BlueprintCallable)
-		void ApplyAttackLaunch();
-
-	UFUNCTION()
-		void EndAttackLaunch();
 
 	UFUNCTION()
 		void CancelAttack();
@@ -93,6 +106,12 @@ public:
 
 	UFUNCTION()
 		int GetCurrentCombo();
+
+	UFUNCTION()
+		FAttack GetCurrentAttack();
+
+	UFUNCTION()
+		EAttackType GetCurrentAttackType();
 
 	UFUNCTION()
 		float GetAttackDamage();

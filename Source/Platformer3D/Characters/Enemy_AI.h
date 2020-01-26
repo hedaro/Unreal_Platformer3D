@@ -2,10 +2,15 @@
 
 #pragma once
 
+// Engine libraries
 #include "CoreMinimal.h"
-#include "Platformer3DCharacter.h"
-#include "LockOn_Interface.h"
+#include "Components/WidgetComponent.h"
 #include "Perception/PawnSensingComponent.h"
+// Custom libraries
+#include "Characters/Platformer3DCharacter.h"
+#include "Characters/PlayerCharacter.h"
+#include "Interfaces/LockOn_Interface.h"
+#include "Widgets/EnemyGUI_Widget.h"
 
 #include "Enemy_AI.generated.h"
 
@@ -38,13 +43,18 @@ protected:
 
 private:
 	/*** AI ***/
-	ACharacter* PlayerCharacter;
+	APlayerCharacter* PlayerCharacter;
 	bool SeenPlayer = false;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
 		UPawnSensingComponent* PawnSensingComponent;
 
 	/*** Combat ***/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		UWidgetComponent* GUIWidgetComponent;
+
+	UEnemyGUI_Widget* GUIWidget;
+
 	bool Flinch;
 
 public:

@@ -11,7 +11,7 @@ void APlatformer3DPlayerController::BeginPlay()
 
 	if (HUDwidget)
 	{
-		PlayerHUD = CreateWidget<UUserWidget>(this, HUDwidget);
+		PlayerHUD = CreateWidget<UUserWidget>(this, HUDwidget, TEXT("Player HUD"));
 
 		if (PlayerHUD)
 		{

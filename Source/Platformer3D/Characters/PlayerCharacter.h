@@ -2,10 +2,11 @@
 
 #pragma once
 
+// Engine libraries
 #include "CoreMinimal.h"
-#include "Platformer3DCharacter.h"
-
 #include "InputCoreTypes.h"
+// Custom libraries
+#include "Characters/Platformer3DCharacter.h"
 
 #include "PlayerCharacter.generated.h"
 

@@ -2,12 +2,15 @@
 
 #include "Enemy_AI.h"
 
+// Engine libraries
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Components/ShapeComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+// Custom libraries
 
 // Sets default values
 AEnemy_AI::AEnemy_AI()
@@ -22,6 +25,9 @@ AEnemy_AI::AEnemy_AI()
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
 	PawnSensingComponent->SetPeripheralVisionAngle(90.f);
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy_AI::OnSeePawn);
+
+	// Create GUI Widget Component
+	GUIWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("GUI Component"));
 }
 
 // Called when the game starts or when spawned
@@ -34,8 +40,19 @@ void AEnemy_AI::BeginPlay()
 	//***** ¿¿¿MyInterface MUST be an interface class???  *****//
 	//this->GetClass()->ImplementsInterface(AEnemy_AI::StaticClass());
 
+	if (GUIWidgetComponent->GetClass())
+	{
+		GUIWidget = Cast<UEnemyGUI_Widget>(GUIWidgetComponent->GetUserWidgetObject());
+		if (GUIWidget)
+		{
+			GUIWidget->SetOwnerNPC(this);
+		}
+	}
+
 	PawnSensingComponent->SightRadius = DistanceToPlayerMinMax.Y;
-	PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
 	Cast<AAIController>(Controller)->bSetControlRotationFromPawnOrientation = 0;
 }
 
@@ -113,7 +130,6 @@ void AEnemy_AI::ReactToDamage()
 {
 	Super::ReactToDamage();
 
-	// Why does it stop when getting hit and why it doesnt cause damage to player (Functions are actually base class)
 	if (!HealthComponent->IsAlive())
 	{
 		SeenPlayer = false;

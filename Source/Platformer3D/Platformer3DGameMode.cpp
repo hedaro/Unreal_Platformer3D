@@ -1,8 +1,11 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "Platformer3DGameMode.h"
-#include "Platformer3DCharacter.h"
+
+// Engine libraries
 #include "UObject/ConstructorHelpers.h"
+// Custom libraries
+#include "Characters/Platformer3DCharacter.h"
 
 APlatformer3DGameMode::APlatformer3DGameMode()
 {
