@@ -121,6 +121,7 @@ void APlatformer3DCharacter::MoveRight(float Value)
 void APlatformer3DCharacter::ResetMoveState()
 {
 	AttackSystem->CancelAttack();
+	DisableAttackHitBox();
 	SetCrouchState(false);
 
 	EnableMoveInput();
@@ -188,9 +189,9 @@ void APlatformer3DCharacter::StartJump()
 
 	if (GetCharacterMovement()->IsFalling() && JumpCount < MaxJumpCount)
 	{
-		FVector JumpSpeed = FVector(0.0f, 0.0f, GetCharacterMovement()->JumpZVelocity);
+		FVector JumpSpeed = FVector(0.f, 0.f, GetCharacterMovement()->JumpZVelocity);
 
-		GetCharacterMovement()->GravityScale = 1;
+		GetCharacterMovement()->GravityScale = 1.f;
 		LaunchCharacter(JumpSpeed, false, true);
 		JumpCount++;
 	}
@@ -208,7 +209,7 @@ void APlatformer3DCharacter::EndJump()
 
 	StopJumping();
 
-	if (GetCharacterMovement()->IsFalling() && !IsDashing)
+	if (GetCharacterMovement()->IsFalling())
 	{
 		GetCharacterMovement()->GravityScale = FastFallSpeedRatio;
 	}
@@ -366,6 +367,8 @@ void APlatformer3DCharacter::LockOffTarget()
 
 void APlatformer3DCharacter::StartAttack()
 {
+	/***** Since End Attack is callde via Anim Montage signal, try to avoid changing parameters that need to be reset on End Attack *****/
+	/***** At the very least, i should do similar steps to End Attack whenever a Cancel Attack is needed, maybe even refactor both functions into one *****/
 	if (AttackSystem->CanAttack())
 	{
 		DisableMoveInput();
@@ -479,10 +482,11 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 {
 	IDamagableObject_Interface::ReactToDamage(AttackForce);
 
-	AttackSystem->CancelAttack();
-
 	if (HealthComponent->IsAlive())
 	{
+		AttackSystem->CancelAttack();
+		DisableAttackHitBox();
+
 		if (DamageMontage)
 		{
 			GetCharacterMovement()->StopMovementImmediately();
@@ -492,9 +496,10 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 			PlayAnimMontage(DamageMontage);
 			GetCharacterMovement()->Launch(GetActorUpVector() * AttackForce);
 		}
+
+		GetWorldTimerManager().ClearTimer(DamageTimerHandle);
+		GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 1.f, false);
 	}
-	GetWorldTimerManager().ClearTimer(DamageTimerHandle);
-	GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 1.f, false);
 }
 
 void APlatformer3DCharacter::EndReactToDamage()
@@ -513,10 +518,10 @@ void APlatformer3DCharacter::DoDamage(AActor* Target)
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (EventInstigator != Controller)
+	if (EventInstigator != Controller && HealthComponent->IsAlive())
 	{
 		HealthComponent->DecreaseHealth(Damage);
-		if (!HealthComponent->IsAlive())
+		if (GetCurrentHealth() <= 0)
 		{
 			GetCharacterMovement()->DisableMovement();
 			// Lock off target and other stuff people do when they die

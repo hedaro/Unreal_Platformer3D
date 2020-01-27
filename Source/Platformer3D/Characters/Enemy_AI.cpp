@@ -45,6 +45,7 @@ void AEnemy_AI::BeginPlay()
 		GUIWidget = Cast<UEnemyGUI_Widget>(GUIWidgetComponent->GetUserWidgetObject());
 		if (GUIWidget)
 		{
+			//***** Widget is showing way below the character, despite setting it's position in the blueprint's vieport tab, maybe set a default position *****//
 			GUIWidget->SetOwnerNPC(this);
 		}
 	}
@@ -103,8 +104,9 @@ void AEnemy_AI::SeekPlayer()
 			//Cast<AAIController>(Controller)->MoveToActor(PlayerCharacter, 5.f);
 			MoveForward(1.0);
 		}
-		else
+		else if(!GetCharacterMovement()->IsFalling())
 		{
+			/***** For now, enemies can't attack on air, so i do this check here to prevent leaving state unchanged when calling Start Attack*****/
 			StartAttack();
 		}
 		
