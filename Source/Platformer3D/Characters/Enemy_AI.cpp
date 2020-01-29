@@ -136,6 +136,8 @@ void AEnemy_AI::ReactToDamage(float AttackForce)
 	if (!HealthComponent->IsAlive())
 	{
 		SeenPlayer = false;
+
+		PlayerCharacter->AddExp(ExpGiven);
 	}
 }
 

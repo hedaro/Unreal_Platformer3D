@@ -55,6 +55,10 @@ private:
 
 	UEnemyGUI_Widget* GUIWidget;
 
+	/*** Leveling ***/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Leveling", meta = (AllowPrivateAccess= "true"))
+		float ExpGiven = 60.f;
+
 public:
 	UPROPERTY(EditAnywhere, Category = AI)
 		FVector2D DistanceToPlayerMinMax;
