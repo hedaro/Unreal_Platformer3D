@@ -291,3 +291,13 @@ float APlayerCharacter::GetExpToNextLevel() const
 {
 	return ExpToNextLevel;
 }
+
+int APlayerCharacter::GetCurrentLevel() const
+{
+	return PlayerLevel;
+}
+
+int APlayerCharacter::GetSkillPoints() const
+{
+	return SkillPoints;
+}

@@ -70,7 +70,7 @@ private:
 	/*** Leveling ***/
 	float CurrentExp;
 	float ExpToNextLevel = 100.f;
-	int PlayerLevel;
+	int PlayerLevel = 1;
 	int SkillPoints;
 
 public:	
@@ -98,4 +98,10 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		float GetExpToNextLevel() const;
+
+	UFUNCTION(BlueprintPure)
+		int GetCurrentLevel() const;
+
+	UFUNCTION(BlueprintPure)
+		int GetSkillPoints() const;
 };
