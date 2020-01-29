@@ -25,4 +25,7 @@ class PLATFORMER3D_API IDamagableObject_Interface
 public:
 	UFUNCTION()
 		virtual void ReactToDamage(float AttackForce);
+
+	UFUNCTION()
+		virtual bool GetIsAlive() const;
 };

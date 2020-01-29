@@ -246,9 +246,12 @@ public:
 		virtual void ReactToDamage(float AttackForce) override;
 
 	UFUNCTION(BlueprintPure)
-		float GetCurrentHealth();
+		float GetCurrentHealth() const;
 
 	UFUNCTION(BlueprintPure)
-		float GetCurrentHealthPercent();
+		float GetCurrentHealthPercent() const;
+
+	UFUNCTION(BlueprintPure)
+		virtual bool GetIsAlive() const override;
 };
 

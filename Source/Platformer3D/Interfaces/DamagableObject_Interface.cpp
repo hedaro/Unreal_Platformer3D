@@ -8,3 +8,8 @@ void IDamagableObject_Interface::ReactToDamage(float AttackForce)
 {
 
 }
+
+bool IDamagableObject_Interface::GetIsAlive() const
+{
+	return false;
+}

@@ -460,11 +460,13 @@ void APlatformer3DCharacter::DisableAttackHitBox()
 
 void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor != this)
+	if (OtherActor != this && OtherActor->GetClass()->ImplementsInterface(UDamagableObject_Interface::StaticClass()))
 	{
-		DoDamage(OtherActor);
-		if (OtherActor->GetClass()->ImplementsInterface(UDamagableObject_Interface::StaticClass()))
+		IDamagableObject_Interface* DamagableObject = Cast<IDamagableObject_Interface>(OtherActor);
+		if (DamagableObject && DamagableObject->GetIsAlive())
 		{
+			DoDamage(OtherActor);
+
 			if (GetCharacterMovement()->IsFalling())
 			{
 				if (GetCharacterMovement()->Velocity.Z < 0.0f)
@@ -473,7 +475,7 @@ void APlatformer3DCharacter::OnAttackOverlap(class UPrimitiveComponent* Overlapp
 				}
 				GetCharacterMovement()->GravityScale = 0.f;
 			}
-			Cast<IDamagableObject_Interface>(OtherActor)->ReactToDamage(AttackSystem->GetCurrentAttack().LaunchForce);
+			DamagableObject->ReactToDamage(AttackSystem->GetCurrentAttack().LaunchForce);
 		}
 	}
 }
@@ -484,6 +486,7 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 
 	if (HealthComponent->IsAlive())
 	{
+
 		AttackSystem->CancelAttack();
 		DisableAttackHitBox();
 
@@ -518,7 +521,7 @@ void APlatformer3DCharacter::DoDamage(AActor* Target)
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (EventInstigator != Controller && HealthComponent->IsAlive())
+	if (EventInstigator != Controller)
 	{
 		HealthComponent->DecreaseHealth(Damage);
 		if (GetCurrentHealth() <= 0)
@@ -537,7 +540,7 @@ float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const
 
 	return Damage;
 }
-float APlatformer3DCharacter::GetCurrentHealth()
+float APlatformer3DCharacter::GetCurrentHealth() const
 {
 	if (HealthComponent)
 	{
@@ -547,7 +550,7 @@ float APlatformer3DCharacter::GetCurrentHealth()
 	return 0.f;
 }
 
-float APlatformer3DCharacter::GetCurrentHealthPercent()
+float APlatformer3DCharacter::GetCurrentHealthPercent() const
 {
 	if (HealthComponent && HealthComponent->GetMaxHealth() > 0)
 	{
@@ -555,4 +558,14 @@ float APlatformer3DCharacter::GetCurrentHealthPercent()
 	}
 
 	return 0.f;
+}
+
+bool APlatformer3DCharacter::GetIsAlive() const
+{
+	if (HealthComponent)
+	{
+		return HealthComponent->IsAlive();
+	}
+
+	return false;
 }
