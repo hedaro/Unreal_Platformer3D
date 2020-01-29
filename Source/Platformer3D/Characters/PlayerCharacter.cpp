@@ -281,3 +281,13 @@ void APlayerCharacter::LevelUp()
 	PlayerLevel++;
 	SkillPoints++;
 }
+
+float APlayerCharacter::GetCurrentExp() const
+{
+	return CurrentExp;
+}
+
+float APlayerCharacter::GetExpToNextLevel() const
+{
+	return ExpToNextLevel;
+}

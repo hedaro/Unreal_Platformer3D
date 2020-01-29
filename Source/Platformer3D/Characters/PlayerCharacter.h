@@ -92,4 +92,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void LevelUp();
+
+	UFUNCTION(BlueprintPure)
+		float GetCurrentExp() const;
+
+	UFUNCTION(BlueprintPure)
+		float GetExpToNextLevel() const;
 };
