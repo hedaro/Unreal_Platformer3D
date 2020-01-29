@@ -261,3 +261,23 @@ void APlayerCharacter::ReactToDamage(float AttackForce)
 		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
 }
+
+void APlayerCharacter::AddExp(float Experience)
+{
+	if (CurrentExp + Experience >= ExpToNextLevel)
+	{
+		CurrentExp += Experience - ExpToNextLevel;
+		ExpToNextLevel *= 2.f;
+		LevelUp();
+	}
+	else
+	{
+		CurrentExp += Experience;
+	}
+}
+
+void APlayerCharacter::LevelUp()
+{
+	PlayerLevel++;
+	SkillPoints++;
+}

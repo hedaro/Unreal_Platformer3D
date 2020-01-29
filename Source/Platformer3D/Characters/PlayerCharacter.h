@@ -67,6 +67,12 @@ private:
 	/*** Camera Control ***/
 	int CameraMode = 0;
 
+	/*** Leveling ***/
+	float CurrentExp;
+	float ExpToNextLevel = 100.f;
+	int PlayerLevel;
+	int SkillPoints;
+
 public:	
 	/*** Camera Control ***/
 	UPROPERTY(EditAnywhere, Category = Camera)
@@ -79,4 +85,11 @@ public:
 	virtual void LookAt(FVector Location, float Rate) override;
 
 	virtual void ReactToDamage(float AttackForce) override;
+
+	/*** Leveling ***/
+	UFUNCTION(BlueprintCallable)
+		void AddExp(float Experience);
+
+	UFUNCTION(BlueprintCallable)
+		void LevelUp();
 };
