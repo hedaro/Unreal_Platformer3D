@@ -40,7 +40,7 @@ void AEnemy_AI::BeginPlay()
 	//***** ¿¿¿MyInterface MUST be an interface class???  *****//
 	//this->GetClass()->ImplementsInterface(AEnemy_AI::StaticClass());
 
-	if (GUIWidgetComponent->GetClass())
+	if (GUIWidgetComponent)
 	{
 		GUIWidget = Cast<UEnemyGUI_Widget>(GUIWidgetComponent->GetUserWidgetObject());
 		if (GUIWidget)

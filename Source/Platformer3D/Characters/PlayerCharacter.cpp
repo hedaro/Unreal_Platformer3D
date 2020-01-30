@@ -43,6 +43,11 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	Controller = GetWorld()->GetFirstPlayerController();
+
+	if (SkillsMenuWidget)
+	{
+		SkillsMenu = CreateWidget<UUserWidget>(Cast<APlayerController>(Controller), SkillsMenuWidget, TEXT("Skills Menu"));
+	}
 }
 
 // Called every frame
@@ -86,6 +91,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &APlatformer3DCharacter::StartHeavyAttack);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlatformer3DCharacter::ToggleCrouchState);
+
+	PlayerInputComponent->BindAction("SkillsMenu", IE_Pressed, this, &APlayerCharacter::ToggleSkillsMenu);
 }
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)
@@ -300,4 +307,44 @@ int APlayerCharacter::GetCurrentLevel() const
 int APlayerCharacter::GetSkillPoints() const
 {
 	return SkillPoints;
+}
+
+void APlayerCharacter::ToggleSkillsMenu()
+{
+	if (SkillsMenu)
+	{
+		if (SkillsMenu->IsInViewport())
+		{
+			HideSkillsMenu();
+		}
+		else
+		{
+			ShowSkillsMenu();
+		}
+	}
+}
+
+void APlayerCharacter::ShowSkillsMenu()
+{
+	if (SkillsMenu)
+	{
+		SkillsMenu->AddToViewport();
+
+		APlayerController* PlayerController = Cast<APlayerController>(Controller);
+		PlayerController->bShowMouseCursor = true;
+		PlayerController->bEnableClickEvents = true;
+		PlayerController->bEnableMouseOverEvents = true;
+	}
+}
+
+void APlayerCharacter::HideSkillsMenu()
+{
+	if (SkillsMenu)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(Controller);
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->bEnableClickEvents = false;
+		PlayerController->bEnableMouseOverEvents = false;
+		SkillsMenu->RemoveFromViewport();
+	}
 }

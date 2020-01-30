@@ -5,6 +5,7 @@
 // Engine libraries
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
+#include "Components/WidgetComponent.h"
 // Custom libraries
 #include "Characters/Platformer3DCharacter.h"
 
@@ -104,4 +105,19 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		int GetSkillPoints() const;
+
+	/*** Skils ***/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
+		TSubclassOf<class UUserWidget> SkillsMenuWidget;
+
+	UUserWidget* SkillsMenu;
+
+	UFUNCTION(BlueprintCallable)
+		void ToggleSkillsMenu();
+
+	UFUNCTION(BlueprintCallable)
+		void ShowSkillsMenu();
+
+	UFUNCTION(BlueprintCallable)
+		void HideSkillsMenu();
 };
