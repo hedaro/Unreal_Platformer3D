@@ -47,6 +47,7 @@ void APlayerCharacter::BeginPlay()
 	if (SkillsMenuWidget)
 	{
 		SkillsMenu = CreateWidget<UUserWidget>(Cast<APlayerController>(Controller), SkillsMenuWidget, TEXT("Skills Menu"));
+		//SkillsMenu->AddToViewport();
 	}
 }
 
@@ -304,11 +305,6 @@ int APlayerCharacter::GetCurrentLevel() const
 	return PlayerLevel;
 }
 
-int APlayerCharacter::GetSkillPoints() const
-{
-	return SkillPoints;
-}
-
 void APlayerCharacter::ToggleSkillsMenu()
 {
 	if (SkillsMenu)
@@ -347,4 +343,31 @@ void APlayerCharacter::HideSkillsMenu()
 		PlayerController->bEnableMouseOverEvents = false;
 		SkillsMenu->RemoveFromViewport();
 	}
+}
+
+FSkill APlayerCharacter::GetSkill(FString SkillName) const
+{
+	const FSkill* Skill = Skills.Find(SkillName);
+
+	if (Skill)
+	{
+		return *Skill;
+	}
+
+	return FSkill{ 0, true };
+}
+
+int APlayerCharacter::SpendSkillPoints(int Amount)
+{
+	if (SkillPoints >= Amount && Amount > 0)
+	{
+		return SkillPoints -= Amount;
+	}
+	
+	return SkillPoints;
+}
+
+int APlayerCharacter::GetSkillPoints() const
+{
+	return SkillPoints;
 }

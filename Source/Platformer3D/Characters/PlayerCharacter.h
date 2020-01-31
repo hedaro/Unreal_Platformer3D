@@ -11,6 +11,18 @@
 
 #include "PlayerCharacter.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSkill
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	int Cost;
+
+	UPROPERTY(VisibleAnywhere)
+	bool Acquired;
+};
+
 UCLASS()
 class PLATFORMER3D_API APlayerCharacter : public APlatformer3DCharacter
 {
@@ -72,7 +84,7 @@ private:
 	float CurrentExp;
 	float ExpToNextLevel = 100.f;
 	int PlayerLevel = 1;
-	int SkillPoints;
+	int SkillPoints = 1;
 
 public:	
 	/*** Camera Control ***/
@@ -103,10 +115,10 @@ public:
 	UFUNCTION(BlueprintPure)
 		int GetCurrentLevel() const;
 
-	UFUNCTION(BlueprintPure)
-		int GetSkillPoints() const;
+	/*** Skills System ***/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
+	TMap<FString, FSkill> Skills;
 
-	/*** Skils ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 		TSubclassOf<class UUserWidget> SkillsMenuWidget;
 
@@ -120,4 +132,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void HideSkillsMenu();
+
+	UFUNCTION(BlueprintCallable)
+		int SpendSkillPoints(int Amount);
+
+	UFUNCTION(BlueprintPure)
+		int GetSkillPoints() const;
+
+	UFUNCTION(BlueprintPure)
+		FSkill GetSkill(FString SkillName) const;
 };
