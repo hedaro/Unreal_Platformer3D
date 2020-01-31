@@ -354,7 +354,7 @@ FSkill APlayerCharacter::GetSkill(FString SkillName) const
 		return *Skill;
 	}
 
-	return FSkill{ 0, true };
+	return FSkill{ TEXT(""), 0, true };
 }
 
 int APlayerCharacter::SpendSkillPoints(int Amount)
@@ -370,4 +370,36 @@ int APlayerCharacter::SpendSkillPoints(int Amount)
 int APlayerCharacter::GetSkillPoints() const
 {
 	return SkillPoints;
+}
+
+bool APlayerCharacter::IsSkillAvailable(FString SkillName) const
+{
+	const FSkill* Skill = Skills.Find(SkillName);
+
+	if (!Skill)
+	{
+		return false;
+	}
+	else if (Skill->SkillRequired != TEXT(""))
+	{
+		const FSkill* SkillRequired = Skills.Find(Skill->SkillRequired);
+		if (SkillRequired)
+		{
+			return SkillRequired->Acquired && !Skill->Acquired;
+		}
+	}
+
+	return !Skill->Acquired;
+}
+
+void APlayerCharacter::AcquireSkill(FString SkillName)
+{
+	if (Skills.Contains(SkillName) && IsSkillAvailable(SkillName))
+	{
+		if (SkillPoints >= Skills[SkillName].Cost)
+		{
+			SpendSkillPoints(Skills[SkillName].Cost);
+			Skills[SkillName].Acquired = true;
+		}
+	}
 }

@@ -17,6 +17,9 @@ struct FSkill
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
+	FString SkillRequired;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int Cost;
 
 	UPROPERTY(VisibleAnywhere)
@@ -141,4 +144,10 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		FSkill GetSkill(FString SkillName) const;
+
+	UFUNCTION(BlueprintPure)
+		bool IsSkillAvailable(FString SkillName) const;
+
+	UFUNCTION(BlueprintCallable)
+		void AcquireSkill(FString SkillName);
 };
