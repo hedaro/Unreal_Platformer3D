@@ -79,7 +79,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APlatformer3DCharacter::EndJump);
 
 	PlayerInputComponent->BindAxis("ZoomCamera", this, &APlayerCharacter::ZoomCamera);
-	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &APlatformer3DCharacter::StartDash);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &APlayerCharacter::StartDash);
 
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &APlatformer3DCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &APlatformer3DCharacter::EndRun);
@@ -89,7 +89,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("RollDodge", IE_Pressed, this, &APlayerCharacter::RollDodgeInput);
 
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &APlatformer3DCharacter::StartAttack);
-	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &APlatformer3DCharacter::StartHeavyAttack);
+	PlayerInputComponent->BindAction("HeavyAttack", IE_Pressed, this, &APlayerCharacter::StartHeavyAttack);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlatformer3DCharacter::ToggleCrouchState);
 
@@ -399,5 +399,23 @@ void APlayerCharacter::AcquireSkill(FString SkillName)
 			SpendSkillPoints(Skills[SkillName].Cost);
 			Skills[SkillName].Acquired = true;
 		}
+	}
+}
+
+void APlayerCharacter::StartDash()
+{
+	FString SkillName = TEXT("Dash");
+	if (Skills.Contains(SkillName) && Skills[SkillName].Acquired)
+	{
+		Super::StartDash();
+	}
+}
+
+void APlayerCharacter::StartHeavyAttack()
+{
+	FString SkillName = TEXT("Heavy Attack");
+	if (Skills.Contains(SkillName) && Skills[SkillName].Acquired)
+	{
+		Super::StartHeavyAttack();
 	}
 }

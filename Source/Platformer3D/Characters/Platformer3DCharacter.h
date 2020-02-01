@@ -132,7 +132,7 @@ public:
 		int MaxJumpCount = 1;
 
 	UFUNCTION()
-		void StartJump();
+		virtual void StartJump();
 
 	UFUNCTION()
 		void EndJump();
@@ -148,7 +148,7 @@ public:
 		float DashCooldownTime = 1.f;
 
 	UFUNCTION()
-		void StartDash();
+		virtual void StartDash();
 
 	UFUNCTION()
 		void EndDash();
@@ -167,7 +167,7 @@ public:
 		float WalkSpeed = 300.f;
 
 	UFUNCTION()
-		void StartRun();
+		virtual void StartRun();
 
 	UFUNCTION()
 		void EndRun();
@@ -183,7 +183,7 @@ public:
 		virtual void ExecuteRollDodge();
 
 	UFUNCTION()
-		virtual void ResetRollDodgeAnimation();
+		void ResetRollDodgeAnimation();
 
 	/*** LockOn ***/
 	UPROPERTY(EditAnywhere, Category = LockOn)
@@ -234,7 +234,7 @@ public:
 		void DisableAttackHitBox();
 
 	UFUNCTION(BlueprintCallable)
-		void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		virtual void OnAttackOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION(BlueprintCallable)
 		virtual void DoDamage(AActor* Target);
@@ -252,6 +252,6 @@ public:
 		float GetCurrentHealthPercent() const;
 
 	UFUNCTION(BlueprintPure)
-		virtual bool GetIsAlive() const override;
+		bool GetIsAlive() const override;
 };
 

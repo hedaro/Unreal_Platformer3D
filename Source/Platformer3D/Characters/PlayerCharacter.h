@@ -150,4 +150,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void AcquireSkill(FString SkillName);
+
+	/*** Learnable Actions ***/
+	virtual void StartDash() override;
+
+	virtual void StartHeavyAttack() override;
 };
