@@ -327,9 +327,8 @@ void APlayerCharacter::ShowSkillsMenu()
 		SkillsMenu->AddToViewport();
 
 		APlayerController* PlayerController = Cast<APlayerController>(Controller);
+		PlayerController->SetInputMode(FInputModeGameAndUI());
 		PlayerController->bShowMouseCursor = true;
-		PlayerController->bEnableClickEvents = true;
-		PlayerController->bEnableMouseOverEvents = true;
 	}
 }
 
@@ -339,8 +338,7 @@ void APlayerCharacter::HideSkillsMenu()
 	{
 		APlayerController* PlayerController = Cast<APlayerController>(Controller);
 		PlayerController->bShowMouseCursor = false;
-		PlayerController->bEnableClickEvents = false;
-		PlayerController->bEnableMouseOverEvents = false;
+		PlayerController->SetInputMode(FInputModeGameOnly());
 		SkillsMenu->RemoveFromViewport();
 	}
 }
