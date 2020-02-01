@@ -45,6 +45,11 @@ private:
 	/*** AI ***/
 	APlayerCharacter* PlayerCharacter;
 	bool SeenPlayer = false;
+	bool IsWaiting = false;
+	float WaitTimer = 0.f;
+
+	UFUNCTION()
+		void Wait(float Seconds);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
 		UPawnSensingComponent* PawnSensingComponent;
@@ -52,6 +57,9 @@ private:
 	/*** Combat ***/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		UWidgetComponent* GUIWidgetComponent;
+
+	/*** Temporary Combat variables (Need refactor) ***/
+	int CurrentCombo;
 
 	UEnemyGUI_Widget* GUIWidget;
 

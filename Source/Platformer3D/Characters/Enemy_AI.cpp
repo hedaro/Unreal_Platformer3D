@@ -62,9 +62,23 @@ void AEnemy_AI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (HealthComponent->IsAlive() && SeenPlayer)
+	if (HealthComponent->IsAlive())
 	{
-		SeekPlayer();
+		if (!IsWaiting)
+		{
+			if (SeenPlayer)
+			{
+				SeekPlayer();
+			}
+		}
+		else
+		{
+			if (WaitTimer > 0.f)
+			{
+				WaitTimer -= DeltaTime;
+				IsWaiting = WaitTimer > 0.f;
+			}
+		}
 	}
 }
 
@@ -104,10 +118,21 @@ void AEnemy_AI::SeekPlayer()
 			//Cast<AAIController>(Controller)->MoveToActor(PlayerCharacter, 5.f);
 			MoveForward(1.0);
 		}
-		else if(!GetCharacterMovement()->IsFalling())
+		else if (!GetCharacterMovement()->IsFalling())
 		{
 			/***** For now, enemies can't attack on air, so i do this check here to prevent leaving state unchanged when calling Start Attack*****/
 			StartAttack();
+
+			/*** Temporary Combat logic (Need refactor) ***/
+			CurrentCombo = AttackSystem->GetCurrentCombo();
+			if (CurrentCombo < AttackSystem->GetMaxCombo() - 1)
+			{
+				Wait(1.0);
+			}
+			else
+			{
+				Wait(2.f);
+			}
 		}
 		
 		if (DistanceToPlayer() > DistanceToPlayerMinMax.Y)
@@ -144,4 +169,10 @@ void AEnemy_AI::ReactToDamage(float AttackForce)
 float AEnemy_AI::DistanceToPlayer()
 {
 	return GetDistanceTo(PlayerCharacter);
+}
+
+void AEnemy_AI::Wait(float Seconds)
+{
+	WaitTimer = Seconds;
+	IsWaiting = true;
 }
