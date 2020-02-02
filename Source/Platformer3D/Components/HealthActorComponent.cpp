@@ -33,17 +33,27 @@ void UHealthActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	// ...
 }
 
-float UHealthActorComponent::GetCurrentHealth()
-{
-	return CurrentHealth;
-}
-
-float UHealthActorComponent::GetMaxHealth()
+float UHealthActorComponent::GetMaxHealth() const
 {
 	return MaxHealth;
 }
 
-bool UHealthActorComponent::IsAlive()
+void UHealthActorComponent::SetMaxHealth(float Health)
+{
+	MaxHealth = Health;
+}
+
+float UHealthActorComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+
+void UHealthActorComponent::SetCurrentHealth(float Health)
+{
+	CurrentHealth = Health;
+}
+
+bool UHealthActorComponent::IsAlive() const
 {
 	return Alive;
 }

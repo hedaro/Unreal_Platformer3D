@@ -38,13 +38,19 @@ private:
 
 public:
 	UFUNCTION(BlueprintPure)
-		float GetMaxHealth();
+		float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+		void SetMaxHealth(float Health);
 
 	UFUNCTION(BlueprintPure)
-		float GetCurrentHealth();
+		float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+		void SetCurrentHealth(float Health);
 
 	UFUNCTION(BlueprintPure)
-		bool IsAlive();
+		bool IsAlive() const;
 
 	UFUNCTION(BlueprintCallable)
 		void DecreaseHealth(float Amount);

@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "Platformer3DPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -94,6 +95,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlatformer3DCharacter::ToggleCrouchState);
 
 	PlayerInputComponent->BindAction("SkillsMenu", IE_Pressed, this, &APlayerCharacter::ToggleSkillsMenu);
+
+	PlayerInputComponent->BindAction("SaveGame", IE_Pressed, this, &APlayerCharacter::SaveGame);
+	PlayerInputComponent->BindAction("LoadGame", IE_Pressed, this, &APlayerCharacter::LoadGame);
 }
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)
@@ -325,7 +329,7 @@ void APlayerCharacter::ShowSkillsMenu()
 	if (SkillsMenu)
 	{
 		SkillsMenu->AddToViewport();
-
+		// Something crashes here
 		APlayerController* PlayerController = Cast<APlayerController>(Controller);
 		PlayerController->SetInputMode(FInputModeGameAndUI());
 		PlayerController->bShowMouseCursor = true;
@@ -417,5 +421,45 @@ void APlayerCharacter::StartHeavyAttack()
 	if (Skills.Contains(SkillName) && Skills[SkillName].Acquired)
 	{
 		Super::StartHeavyAttack();
+	}
+}
+
+void APlayerCharacter::SaveGame()
+{
+	FSaveData SaveData;
+	SaveData.PlayerPosition = GetActorTransform();
+	SaveData.CurrentHealth = HealthComponent->GetCurrentHealth();
+	SaveData.MaxHealth = HealthComponent->GetMaxHealth();
+	SaveData.BaseDamage = BaseDamage;
+	SaveData.CurrentExp = CurrentExp;
+	SaveData.ExpToNextLevel = ExpToNextLevel;
+	SaveData.PlayerLevel = PlayerLevel;
+	SaveData.SkillPoints = SkillPoints;
+	SaveData.Skills = Skills;
+
+	APlatformer3DPlayerController* PlayerController = Cast<APlatformer3DPlayerController>(Controller);
+	if (PlayerController->SaveGame(SaveData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Save Successful"));
+	}
+}
+
+void APlayerCharacter::LoadGame()
+{
+	FSaveData SaveData;
+
+	APlatformer3DPlayerController* PlayerController = Cast<APlatformer3DPlayerController>(Controller);
+	if (PlayerController->LoadGame(SaveData))
+	{
+		SetActorTransform(SaveData.PlayerPosition);
+		HealthComponent->SetCurrentHealth(SaveData.CurrentHealth);
+		HealthComponent->SetMaxHealth(SaveData.MaxHealth);
+		BaseDamage = SaveData.BaseDamage;
+		SaveData.CurrentExp = SaveData.CurrentExp;
+		ExpToNextLevel = SaveData.ExpToNextLevel;
+		PlayerLevel = SaveData.PlayerLevel;
+		SkillPoints = SaveData.SkillPoints;
+		Skills = SaveData.Skills;
+		UE_LOG(LogTemp, Warning, TEXT("Load Successful"));
 	}
 }

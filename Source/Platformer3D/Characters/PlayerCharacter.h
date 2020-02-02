@@ -155,4 +155,11 @@ public:
 	virtual void StartDash() override;
 
 	virtual void StartHeavyAttack() override;
+
+	/*** Save/Load Game ***/
+	UFUNCTION(BlueprintCallable)
+	virtual void SaveGame();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void LoadGame();
 };
