@@ -8,6 +8,7 @@
 #include "AIController.h"
 #include "Components/ShapeComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 // Custom libraries
@@ -42,6 +43,7 @@ void AEnemy_AI::BeginPlay()
 
 	if (GUIWidgetComponent)
 	{
+		GUIWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
 		GUIWidget = Cast<UEnemyGUI_Widget>(GUIWidgetComponent->GetUserWidgetObject());
 		if (GUIWidget)
 		{
@@ -61,6 +63,12 @@ void AEnemy_AI::BeginPlay()
 void AEnemy_AI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (GUIWidgetComponent)
+	{
+		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCharacter->GetFollowCamera()->GetComponentLocation());
+		GUIWidgetComponent->SetWorldRotation(TargetRotation);
+	}
 
 	if (HealthComponent->IsAlive())
 	{
