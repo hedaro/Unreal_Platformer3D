@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "Components/WidgetComponent.h"
 #include "Perception/PawnSensingComponent.h"
+#include "Engine/TargetPoint.h"
 // Custom libraries
 #include "Characters/Platformer3DCharacter.h"
 #include "Characters/PlayerCharacter.h"
@@ -41,6 +42,9 @@ protected:
 	UFUNCTION()
 		void SeekPlayer();
 
+	UFUNCTION()
+		void MoveToTargetPoint();
+
 private:
 	/*** AI ***/
 	APlayerCharacter* PlayerCharacter;
@@ -48,11 +52,16 @@ private:
 	bool IsWaiting = false;
 	float WaitTimer = 0.f;
 
-	UFUNCTION()
-		void Wait(float Seconds);
+	int CurrentTargetPointIndex = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	TArray<ATargetPoint*> TargetPoints;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
 		UPawnSensingComponent* PawnSensingComponent;
+
+	UFUNCTION()
+	float DistanceToPlayer();
 
 	/*** Combat ***/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -75,5 +84,9 @@ public:
 
 	virtual void ReactToDamage(float AttackForce) override;
 
-	float DistanceToPlayer();
+	UFUNCTION(BlueprintCallable)
+		void Wait(float Seconds);
+
+	UFUNCTION(BlueprintCallable)
+		void CancelWait();
 };

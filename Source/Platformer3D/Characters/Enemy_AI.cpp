@@ -78,6 +78,10 @@ void AEnemy_AI::Tick(float DeltaTime)
 			{
 				SeekPlayer();
 			}
+			else if (TargetPoints.Num() > 0)
+			{
+				MoveToTargetPoint();
+			}
 		}
 		else
 		{
@@ -102,6 +106,7 @@ void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 {
 	if (!SeenPlayer && OtherPawn == PlayerCharacter && HealthComponent->IsAlive())
 	{
+		CancelWait();
 		SeenPlayer = true;
 		if (!NearestTarget)
 		{
@@ -183,4 +188,29 @@ void AEnemy_AI::Wait(float Seconds)
 {
 	WaitTimer = Seconds;
 	IsWaiting = true;
+}
+
+void AEnemy_AI::CancelWait()
+{
+	IsWaiting = false;
+	WaitTimer = 0.0f;
+}
+
+void AEnemy_AI::MoveToTargetPoint()
+{
+	/*** Fix rotation and distance tolerance ***/
+	if (FVector::DistXY(GetActorLocation(), TargetPoints[CurrentTargetPointIndex]->GetTargetLocation()) > 2.f)
+	{
+		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetPoints[CurrentTargetPointIndex]->GetTargetLocation());
+		FVector TargetDirection = TargetRotation.Vector();
+
+		TargetDirection.Normalize();
+		MoveForward(TargetDirection.X * 0.5f);
+		MoveRight(TargetDirection.Y * 0.5f);
+	}
+	else
+	{
+		CurrentTargetPointIndex = (CurrentTargetPointIndex + 1) % TargetPoints.Num();
+		Wait(5.f);
+	}
 }
