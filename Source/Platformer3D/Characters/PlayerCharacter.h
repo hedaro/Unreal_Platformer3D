@@ -125,6 +125,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 		TSubclassOf<class UUserWidget> SkillsMenuWidget;
 
+	UPROPERTY()
 	UUserWidget* SkillsMenu;
 
 	UFUNCTION(BlueprintCallable)
