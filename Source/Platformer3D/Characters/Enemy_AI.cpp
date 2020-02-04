@@ -27,8 +27,17 @@ AEnemy_AI::AEnemy_AI()
 	PawnSensingComponent->SetPeripheralVisionAngle(90.f);
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AEnemy_AI::OnSeePawn);
 
+	USceneComponent* MeshComponent = Cast<USceneComponent>(GetMesh());
 	// Create GUI Widget Component
 	GUIWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("GUI Component"));
+
+	AssassinationArea = CreateDefaultSubobject<UBoxComponent>(TEXT("Assassination Area"));
+
+	if (MeshComponent)
+	{
+		GUIWidgetComponent->SetupAttachment(MeshComponent);
+		AssassinationArea->SetupAttachment(MeshComponent);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -43,7 +52,7 @@ void AEnemy_AI::BeginPlay()
 
 	if (GUIWidgetComponent)
 	{
-		GUIWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
+		GUIWidgetComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 200.f));
 		GUIWidget = Cast<UEnemyGUI_Widget>(GUIWidgetComponent->GetUserWidgetObject());
 		if (GUIWidget)
 		{
@@ -199,7 +208,7 @@ void AEnemy_AI::CancelWait()
 void AEnemy_AI::MoveToTargetPoint()
 {
 	/*** Fix rotation and distance tolerance ***/
-	if (FVector::DistXY(GetActorLocation(), TargetPoints[CurrentTargetPointIndex]->GetTargetLocation()) > 2.f)
+	if (FVector::DistXY(GetActorLocation(), TargetPoints[CurrentTargetPointIndex]->GetTargetLocation()) > TargetPointDistanceTolerance)
 	{
 		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetPoints[CurrentTargetPointIndex]->GetTargetLocation());
 		FVector TargetDirection = TargetRotation.Vector();

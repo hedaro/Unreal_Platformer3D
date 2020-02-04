@@ -5,6 +5,7 @@
 // Engine libraries
 #include "CoreMinimal.h"
 #include "Components/WidgetComponent.h"
+#include "Components/BoxComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Engine/TargetPoint.h"
 // Custom libraries
@@ -57,15 +58,18 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	TArray<ATargetPoint*> TargetPoints;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
 		UPawnSensingComponent* PawnSensingComponent;
 
 	UFUNCTION()
 	float DistanceToPlayer();
 
 	/*** Combat ***/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		UWidgetComponent* GUIWidgetComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+		UBoxComponent* AssassinationArea;
 
 	/*** Temporary Combat variables (Need refactor) ***/
 	int CurrentCombo;
@@ -77,8 +81,11 @@ private:
 		float ExpGiven = 60.f;
 
 public:
-	UPROPERTY(EditAnywhere, Category = AI)
+	UPROPERTY(EditAnywhere, Category = "AI")
 		FVector2D DistanceToPlayerMinMax;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+		float TargetPointDistanceTolerance = 50.f;
 
 	virtual void DoDamage(AActor* Target) override;
 
