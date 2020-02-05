@@ -169,9 +169,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
 	TMap<EItem_Types, int> ItemsHeld;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Items")
+		float HealthPotionRecovery = 100;
+
 	UFUNCTION(BlueprintCallable)
 		void AddPickUpItem(EItem_Types ItemType, int Amount);
 
 	UFUNCTION(BlueprintPure)
 		int GetPickUpItemNum(EItem_Types ItemType) const;
+
+	UFUNCTION(BlueprintCallable)
+		void UseHealthPotion();
 };

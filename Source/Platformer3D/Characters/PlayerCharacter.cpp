@@ -98,6 +98,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("SaveGame", IE_Pressed, this, &APlayerCharacter::SaveGame);
 	PlayerInputComponent->BindAction("LoadGame", IE_Pressed, this, &APlayerCharacter::LoadGame);
+
+	PlayerInputComponent->BindAction("QuickItem", IE_Pressed, this, &APlayerCharacter::UseHealthPotion);
 }
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)
@@ -489,4 +491,16 @@ int APlayerCharacter::GetPickUpItemNum(EItem_Types ItemType) const
 	}
 
 	return 0;
+}
+
+void APlayerCharacter::UseHealthPotion()
+{
+	if (ItemsHeld.Contains(EItem_Types::IT_HealthRecovery) && ItemsHeld[EItem_Types::IT_HealthRecovery] > 0)
+	{
+		if (HealthComponent->GetCurrentHealth() < HealthComponent->GetMaxHealth())
+		{
+			HealthComponent->RecoverHealth(HealthPotionRecovery);
+			ItemsHeld[EItem_Types::IT_HealthRecovery] = ItemsHeld[EItem_Types::IT_HealthRecovery] - 1;
+		}
+	}
 }
