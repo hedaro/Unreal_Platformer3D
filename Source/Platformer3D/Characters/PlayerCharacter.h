@@ -8,6 +8,7 @@
 #include "Components/WidgetComponent.h"
 // Custom libraries
 #include "Characters/Platformer3DCharacter.h"
+#include "Enums/Item_Types.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -163,4 +164,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void LoadGame();
+
+	/*** Items ***/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	TMap<EItem_Types, int> ItemsHeld;
+
+	UFUNCTION(BlueprintCallable)
+		void AddPickUpItem(EItem_Types ItemType, int Amount);
+
+	UFUNCTION(BlueprintPure)
+		int GetPickUpItemNum(EItem_Types ItemType) const;
 };

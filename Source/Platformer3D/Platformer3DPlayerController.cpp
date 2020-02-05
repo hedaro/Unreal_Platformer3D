@@ -36,6 +36,7 @@ bool APlatformer3DPlayerController::SaveGame(FSaveData SaveData)
 		PlayerSaveGame->PlayerLevel = SaveData.PlayerLevel;
 		PlayerSaveGame->SkillPoints = SaveData.SkillPoints;
 		PlayerSaveGame->Skills = SaveData.Skills;
+		PlayerSaveGame->ItemsHeld = SaveData.ItemsHeld;
 		return UGameplayStatics::SaveGameToSlot(PlayerSaveGame, PlayerSaveGame->SaveSlotName, PlayerSaveGame->UserIndex);
 	}
 
@@ -60,6 +61,7 @@ bool APlatformer3DPlayerController::LoadGame(FSaveData& LoadedSaveData)
 			LoadedSaveData.PlayerLevel = LoadedGame->PlayerLevel;
 			LoadedSaveData.SkillPoints = LoadedGame->SkillPoints;
 			LoadedSaveData.Skills = LoadedGame->Skills;
+			LoadedSaveData.ItemsHeld = LoadedGame->ItemsHeld;
 			return true;
 		}
 	}

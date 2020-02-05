@@ -329,7 +329,6 @@ void APlayerCharacter::ShowSkillsMenu()
 	if (SkillsMenu)
 	{
 		SkillsMenu->AddToViewport();
-		// Something crashes here
 		APlayerController* PlayerController = Cast<APlayerController>(Controller);
 		PlayerController->SetInputMode(FInputModeGameAndUI());
 		PlayerController->bShowMouseCursor = true;
@@ -436,6 +435,7 @@ void APlayerCharacter::SaveGame()
 	SaveData.PlayerLevel = PlayerLevel;
 	SaveData.SkillPoints = SkillPoints;
 	SaveData.Skills = Skills;
+	SaveData.ItemsHeld = ItemsHeld;
 
 	APlatformer3DPlayerController* PlayerController = Cast<APlatformer3DPlayerController>(Controller);
 	if (PlayerController->SaveGame(SaveData))
@@ -460,6 +460,33 @@ void APlayerCharacter::LoadGame()
 		PlayerLevel = SaveData.PlayerLevel;
 		SkillPoints = SaveData.SkillPoints;
 		Skills = SaveData.Skills;
+		ItemsHeld = SaveData.ItemsHeld;
 		UE_LOG(LogTemp, Warning, TEXT("Load Successful"));
 	}
+}
+
+void APlayerCharacter::AddPickUpItem(EItem_Types ItemType, int Amount)
+{
+	if (ItemType != EItem_Types::IT_None && Amount > 0)
+	{
+		/*** Add check for amount >= 0 ***/
+		if (ItemsHeld.Contains(ItemType))
+		{
+			ItemsHeld[ItemType] = ItemsHeld[ItemType] + Amount;
+		}
+		else
+		{
+			ItemsHeld.Add(ItemType, Amount);
+		}
+	}
+}
+
+int APlayerCharacter::GetPickUpItemNum(EItem_Types ItemType) const
+{
+	if (ItemsHeld.Contains(ItemType))
+	{
+		return ItemsHeld[ItemType];
+	}
+
+	return 0;
 }
