@@ -75,6 +75,15 @@ public:
 		TArray<FAttack> AerialAttacksArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		TArray<FAttack> RangedAttackStart;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		TArray<FAttack> RangedAttackAim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		TArray<FAttack> RangedAttackFire;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 		float AttackCooldown = 0.f;
 
 	UFUNCTION()
