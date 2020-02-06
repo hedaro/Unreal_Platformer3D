@@ -139,7 +139,7 @@ void UAttackSystemComponent::RangedAttack()
 	{
 		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.StartAnimMontage);
 	}*/
-	if (RangedAttackStruct.AimAnimMontage)
+	if (OwnerCharacterRef && RangedAttackStruct.AimAnimMontage)
 	{
 		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.AimAnimMontage);
 	}
@@ -150,7 +150,7 @@ void UAttackSystemComponent::FireRangedAttack()
 	UE_LOG(LogTemp, Warning, TEXT("Firing arrow"));
 
 	bIsAiming = false;
-	if (RangedAttackStruct.FireAnimMontage)
+	if (OwnerCharacterRef && RangedAttackStruct.FireAnimMontage)
 	{
 		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.FireAnimMontage);
 	}
