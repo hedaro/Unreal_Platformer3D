@@ -37,7 +37,7 @@ void UAttackSystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 bool UAttackSystemComponent::CanAttack()
 {
-	return !SaveAttack && AttackCooldownTimer <= 0.f;
+	return !bIsAiming && !SaveAttack && AttackCooldownTimer <= 0.f;
 }
 
 void UAttackSystemComponent::NormalAttack()
@@ -130,9 +130,47 @@ void UAttackSystemComponent::CancelAttack()
 	ResetCombo();
 }
 
+void UAttackSystemComponent::RangedAttack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Drawing arrow"));
+
+	bIsAiming = true;
+	/*if (RangedAttackStruct.StartAnimMontage)
+	{
+		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.StartAnimMontage);
+	}*/
+	if (RangedAttackStruct.AimAnimMontage)
+	{
+		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.AimAnimMontage);
+	}
+}
+
+void UAttackSystemComponent::FireRangedAttack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Firing arrow"));
+
+	bIsAiming = false;
+	if (RangedAttackStruct.FireAnimMontage)
+	{
+		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.FireAnimMontage);
+	}
+}
+
+void UAttackSystemComponent::CancelRangedAttack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Cancel arrow"));
+
+	bIsAiming = false;
+}
+
 bool UAttackSystemComponent::IsAttacking()
 {
 	return bIsAttacking;
+}
+
+bool UAttackSystemComponent::IsAiming()
+{
+	return bIsAiming;;
 }
 
 bool UAttackSystemComponent::IsAttackAnimation()

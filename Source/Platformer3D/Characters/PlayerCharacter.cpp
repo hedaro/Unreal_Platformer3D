@@ -100,6 +100,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("LoadGame", IE_Pressed, this, &APlayerCharacter::LoadGame);
 
 	PlayerInputComponent->BindAction("QuickItem", IE_Pressed, this, &APlayerCharacter::UseHealthPotion);
+
+	PlayerInputComponent->BindAction("Bow", IE_Pressed, this, &APlayerCharacter::StartRangedAttack);
+	PlayerInputComponent->BindAction("Bow", IE_Released, this, &APlayerCharacter::EndRangedAttack);
 }
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)

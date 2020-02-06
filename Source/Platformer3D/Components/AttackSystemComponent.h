@@ -35,6 +35,28 @@ struct FAttack
 		EAttackType AttackType;
 };
 
+USTRUCT(BlueprintType)
+struct FRangedAttack
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+		UAnimMontage* StartAnimMontage;
+
+	UPROPERTY(EditAnywhere)
+		UAnimMontage* AimAnimMontage;
+
+	UPROPERTY(EditAnywhere)
+		UAnimMontage* FireAnimMontage;
+
+	UPROPERTY(EditAnywhere)
+		AActor* Projectile;
+
+	UPROPERTY(EditAnywhere)
+		float Damage;
+
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PLATFORMER3D_API UAttackSystemComponent : public UActorComponent
 {
@@ -50,6 +72,7 @@ private:
 	/*** Attack ***/
 	bool bIsAttacking = false;
 	bool SaveAttack = false;
+	bool bIsAiming = false;
 	int NormalComboCount = 0;
 	int HeavyComboCount = 0;
 	int AerialComboCount = 0;
@@ -75,13 +98,7 @@ public:
 		TArray<FAttack> AerialAttacksArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		TArray<FAttack> RangedAttackStart;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		TArray<FAttack> RangedAttackAim;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-		TArray<FAttack> RangedAttackFire;
+		FRangedAttack RangedAttackStruct;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 		float AttackCooldown = 0.f;
@@ -108,7 +125,19 @@ public:
 		void CancelAttack();
 
 	UFUNCTION()
+		void RangedAttack();
+
+	UFUNCTION()
+		void FireRangedAttack();
+
+	UFUNCTION()
+		void CancelRangedAttack();
+
+	UFUNCTION()
 		bool IsAttacking();
+
+	UFUNCTION()
+		bool IsAiming();
 		
 	UFUNCTION()
 		bool IsAttackAnimation();

@@ -425,6 +425,22 @@ void APlatformer3DCharacter::EndAttackLaunch()
 	GetCharacterMovement()->GroundFriction = 8.f;
 }
 
+void APlatformer3DCharacter::StartRangedAttack()
+{
+	if (AttackSystem->CanAttack())
+	{
+		AttackSystem->RangedAttack();
+	}
+}
+
+void APlatformer3DCharacter::EndRangedAttack()
+{
+	if (AttackSystem->IsAiming())
+	{
+		AttackSystem->FireRangedAttack();
+	}
+}
+
 void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
 {
 	AttackHitbox = Hitbox;
