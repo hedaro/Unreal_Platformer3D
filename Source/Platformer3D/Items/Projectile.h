@@ -10,7 +10,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Projectile.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class PLATFORMER3D_API AProjectile : public AActor
 {
 	GENERATED_BODY()

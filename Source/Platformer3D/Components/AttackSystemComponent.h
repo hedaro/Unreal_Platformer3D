@@ -2,10 +2,13 @@
 
 #pragma once
 
+//Engine libraries
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/Character.h"
 #include "Animation/AnimMontage.h"
+//Custom libraries
+#include "Items/Projectile.h"
 #include "Enums/AttackTypes.h"
 
 #include "AttackSystemComponent.generated.h"
@@ -50,7 +53,7 @@ struct FRangedAttack
 		UAnimMontage* FireAnimMontage;
 
 	UPROPERTY(EditAnywhere)
-		AActor* Projectile;
+		TSubclassOf<AProjectile> ProjectileToSpawn;
 
 	UPROPERTY(EditAnywhere)
 		float Damage;

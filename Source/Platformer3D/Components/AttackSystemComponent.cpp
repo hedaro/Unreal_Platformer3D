@@ -153,6 +153,17 @@ void UAttackSystemComponent::FireRangedAttack()
 	if (OwnerCharacterRef && RangedAttackStruct.FireAnimMontage)
 	{
 		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.FireAnimMontage);
+
+		if (RangedAttackStruct.ProjectileToSpawn)
+		{
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.Owner = OwnerCharacterRef;
+			FVector Location = OwnerCharacterRef->GetActorLocation();
+			FRotator Rotation = OwnerCharacterRef->GetActorRotation();
+			AProjectile* FiredProjectile = GetWorld()->SpawnActor<AProjectile>(RangedAttackStruct.ProjectileToSpawn, Location, Rotation, SpawnParameters);
+
+			FiredProjectile->SetDamage(RangedAttackStruct.Damage);
+		}
 	}
 }
 
