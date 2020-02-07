@@ -58,6 +58,8 @@ struct FRangedAttack
 	UPROPERTY(EditAnywhere)
 		float Damage;
 
+	UPROPERTY(EditAnywhere)
+		float AttackCooldown = 0.f;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -128,7 +130,7 @@ public:
 		void CancelAttack();
 
 	UFUNCTION()
-		void RangedAttack();
+		void AimRangedAttack();
 
 	UFUNCTION()
 		void FireRangedAttack();

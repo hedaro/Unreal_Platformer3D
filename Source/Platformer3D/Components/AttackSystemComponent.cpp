@@ -44,7 +44,6 @@ void UAttackSystemComponent::NormalAttack()
 {
 	// Ugly and hacky way to simulate a cooldown timer, check Tick() function for update
 	AttackCooldownTimer = AttackCooldown;
-
 	bIsAttacking = true;
 	SaveAttack = true;
 
@@ -61,7 +60,6 @@ void UAttackSystemComponent::HeavyAttack()
 {
 	// Ugly and hacky way to simulate a cooldown timer, check Tick() function for update
 	AttackCooldownTimer = AttackCooldown;
-
 	bIsAttacking = true;
 	SaveAttack = true;
 
@@ -77,7 +75,6 @@ void UAttackSystemComponent::AerialAttack()
 {
 	// Ugly and hacky way to simulate a cooldown timer, check Tick() function for update
 	AttackCooldownTimer = AttackCooldown;
-
 	bIsAttacking = true;
 	SaveAttack = true;
 
@@ -130,10 +127,8 @@ void UAttackSystemComponent::CancelAttack()
 	ResetCombo();
 }
 
-void UAttackSystemComponent::RangedAttack()
+void UAttackSystemComponent::AimRangedAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Drawing arrow"));
-
 	bIsAiming = true;
 	/*if (RangedAttackStruct.StartAnimMontage)
 	{
@@ -147,8 +142,6 @@ void UAttackSystemComponent::RangedAttack()
 
 void UAttackSystemComponent::FireRangedAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Firing arrow"));
-
 	bIsAiming = false;
 	if (OwnerCharacterRef && RangedAttackStruct.FireAnimMontage)
 	{
@@ -163,14 +156,14 @@ void UAttackSystemComponent::FireRangedAttack()
 			AProjectile* FiredProjectile = GetWorld()->SpawnActor<AProjectile>(RangedAttackStruct.ProjectileToSpawn, Location, Rotation, SpawnParameters);
 
 			FiredProjectile->SetDamage(RangedAttackStruct.Damage);
+
+			AttackCooldownTimer = RangedAttackStruct.AttackCooldown;
 		}
 	}
 }
 
 void UAttackSystemComponent::CancelRangedAttack()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Cancel arrow"));
-
 	bIsAiming = false;
 }
 

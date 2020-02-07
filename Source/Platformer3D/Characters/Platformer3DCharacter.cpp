@@ -184,7 +184,7 @@ void APlatformer3DCharacter::StartJump()
 		return;
 
 	ResetMoveState();
-
+	
 	Jump();
 
 	if (GetCharacterMovement()->IsFalling() && JumpCount < MaxJumpCount)
@@ -429,7 +429,7 @@ void APlatformer3DCharacter::StartRangedAttack()
 {
 	if (AttackSystem->CanAttack())
 	{
-		AttackSystem->RangedAttack();
+		AttackSystem->AimRangedAttack();
 	}
 }
 
@@ -537,10 +537,8 @@ void APlatformer3DCharacter::DoDamage(AActor* Target)
 
 float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Instigator %i, controller %i"), EventInstigator, Controller);
 	if (EventInstigator != Controller)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Received %f damage"));
 		HealthComponent->DecreaseHealth(Damage);
 		if (GetCurrentHealth() <= 0)
 		{
