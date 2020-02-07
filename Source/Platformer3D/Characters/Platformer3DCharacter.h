@@ -81,6 +81,9 @@ protected:
 	UPROPERTY(Category=Character, VisibleAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess = "true"))
 		UAttackSystemComponent* AttackSystem;
 
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* WeaponMesh;
+
 	/*** Combat ***/
 	UShapeComponent* AttackHitbox;
 	FTimerHandle DamageTimerHandle;
@@ -232,6 +235,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void RegisterAttackHitbox(UShapeComponent* Hitbox);
+
+	UFUNCTION(BlueprintCallable)
+		void RegisterWeaponMesh(UStaticMeshComponent* MeshComponent);
 
 	UFUNCTION(BlueprintCallable)
 		void EnableAttackHitBox();

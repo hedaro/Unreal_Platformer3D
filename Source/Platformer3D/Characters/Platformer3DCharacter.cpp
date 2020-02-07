@@ -445,19 +445,25 @@ void APlatformer3DCharacter::EndRangedAttack()
 
 void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
 {
-	AttackHitbox = Hitbox;
-	// Hitbox is usually attached to a weapon, which is probably a Mesh, check if it exists and set collision presets
-	UStaticMeshComponent* WeaponMesh = Cast<UStaticMeshComponent>(AttackHitbox->GetAttachParent());
-	if (WeaponMesh)
+	if (Hitbox)
 	{
+		AttackHitbox = Hitbox;
+
+		// Set collision presets
+		AttackHitbox->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		AttackHitbox->SetCollisionProfileName(TEXT("Attacks"));
+		AttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &APlatformer3DCharacter::OnAttackOverlap);
+	}
+}
+
+void APlatformer3DCharacter::RegisterWeaponMesh(UStaticMeshComponent* MeshComponent)
+{
+	if (MeshComponent)
+	{
+		WeaponMesh = MeshComponent;
 		WeaponMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 		WeaponMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	}
-
-	// Set collision presets
-	AttackHitbox->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	AttackHitbox->SetCollisionProfileName(TEXT("Attacks"));
-	AttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &APlatformer3DCharacter::OnAttackOverlap);
 }
 
 void APlatformer3DCharacter::EnableAttackHitBox()

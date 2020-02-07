@@ -290,11 +290,57 @@ void APlayerCharacter::StartRangedAttack()
 
 void APlayerCharacter::EndRangedAttack()
 {
-	//if (AttackSystem->IsAiming() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
-	if (ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
+	if (AttackSystem->IsAiming() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
 	{
-		//AttackSystem->FireRangedAttack();
-		Super::EndRangedAttack();
+		FVector Location = ArrowMesh ? ArrowMesh->GetComponentLocation() : GetActorLocation() ;
+		FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
+		AttackSystem->FireRangedAttack(Location, Rotation);
+
+		ItemsHeld[EItem_Types::IT_Arrow] = ItemsHeld[EItem_Types::IT_Arrow] - 1;
+	}
+}
+
+void APlayerCharacter::RegisterWeaponSheathMesh(UStaticMeshComponent* MeshComponent)
+{
+	if (MeshComponent)
+	{
+		SwordSheathMesh = MeshComponent;
+		SwordSheathMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		SwordSheathMesh->SetCollisionProfileName(TEXT("NoCollision"));
+		SwordSheathMesh->SetHiddenInGame(true);
+	}
+}
+
+void APlayerCharacter::RegisterBowMesh(UStaticMeshComponent* MeshComponent)
+{
+	if (MeshComponent)
+	{
+		BowMesh = MeshComponent;
+		BowMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		BowMesh->SetCollisionProfileName(TEXT("NoCollision"));
+		BowMesh->SetHiddenInGame(true);
+	}
+}
+
+void APlayerCharacter::RegisterBowSheathMesh(UStaticMeshComponent* MeshComponent)
+{
+	if (MeshComponent)
+	{
+		BowSheathMesh = MeshComponent;
+		BowSheathMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		BowSheathMesh->SetCollisionProfileName(TEXT("NoCollision"));
+		BowSheathMesh->SetHiddenInGame(true);
+	}
+}
+
+void APlayerCharacter::RegisterArrowMesh(UStaticMeshComponent* MeshComponent)
+{
+	if (MeshComponent)
+	{
+		ArrowMesh = MeshComponent;
+		ArrowMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+		ArrowMesh->SetCollisionProfileName(TEXT("NoCollision"));
+		ArrowMesh->SetHiddenInGame(true);
 	}
 }
 

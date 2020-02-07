@@ -90,6 +90,19 @@ private:
 	int PlayerLevel = 1;
 	int SkillPoints = 1;
 
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* SwordSheathMesh;
+
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* BowMesh;
+
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* BowSheathMesh;
+
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* ArrowMesh;
+
+
 public:	
 	/*** Camera Control ***/
 	UPROPERTY(EditAnywhere, Category = Camera)
@@ -107,6 +120,19 @@ public:
 	virtual void StartRangedAttack() override;
 
 	virtual void EndRangedAttack() override;
+
+	/*** Combat ***/
+	UFUNCTION(BlueprintCallable)
+		void RegisterWeaponSheathMesh(UStaticMeshComponent* MeshComponent);
+
+	UFUNCTION(BlueprintCallable)
+		void RegisterBowMesh(UStaticMeshComponent* MeshComponent);
+
+	UFUNCTION(BlueprintCallable)
+		void RegisterBowSheathMesh(UStaticMeshComponent* MeshComponent);
+
+	UFUNCTION(BlueprintCallable)
+		void RegisterArrowMesh(UStaticMeshComponent* MeshComponent);
 
 	/*** Leveling ***/
 	UFUNCTION(BlueprintCallable)
