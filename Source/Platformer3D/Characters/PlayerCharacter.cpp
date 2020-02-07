@@ -284,6 +284,12 @@ void APlayerCharacter::StartRangedAttack()
 {
 	if (AttackSystem->CanAttack() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
 	{
+		WeaponMesh->SetHiddenInGame(true);
+		BowSheathMesh->SetHiddenInGame(true);
+		SwordSheathMesh->SetHiddenInGame(false);
+		BowMesh->SetHiddenInGame(false);
+		ArrowMesh->SetHiddenInGame(false);
+
 		AttackSystem->AimRangedAttack();
 	}
 }
@@ -292,6 +298,12 @@ void APlayerCharacter::EndRangedAttack()
 {
 	if (AttackSystem->IsAiming() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
 	{
+		WeaponMesh->SetHiddenInGame(false);
+		BowSheathMesh->SetHiddenInGame(false);
+		SwordSheathMesh->SetHiddenInGame(true);
+		BowMesh->SetHiddenInGame(true);
+		ArrowMesh->SetHiddenInGame(true);
+
 		FVector Location = ArrowMesh ? ArrowMesh->GetComponentLocation() : GetActorLocation() ;
 		FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
 		AttackSystem->FireRangedAttack(Location, Rotation);
@@ -329,7 +341,6 @@ void APlayerCharacter::RegisterBowSheathMesh(UStaticMeshComponent* MeshComponent
 		BowSheathMesh = MeshComponent;
 		BowSheathMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 		BowSheathMesh->SetCollisionProfileName(TEXT("NoCollision"));
-		BowSheathMesh->SetHiddenInGame(true);
 	}
 }
 
