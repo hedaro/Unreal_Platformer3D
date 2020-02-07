@@ -189,6 +189,7 @@ void APlayerCharacter::ExecuteRollDodge()
 	}
 
 	ResetMoveState();
+	AttackSystem->CancelRangedAttack();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played

@@ -221,6 +221,7 @@ void APlatformer3DCharacter::StartDash()
 	{
 		// Stop any montage playing, it should already be on an overridable state
 		ResetMoveState();
+		AttackSystem->CancelRangedAttack();
 
 		// This blocks any imput, preventing any action, use other method if wanted to allow some actions while dashing
 		DisableMoveInput();
@@ -309,6 +310,7 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 	}
 
 	ResetMoveState();
+	AttackSystem->CancelRangedAttack();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	RollDodgeAnimation = ((RollDodgeAction - 1) * 4);
@@ -437,7 +439,7 @@ void APlatformer3DCharacter::EndRangedAttack()
 {
 	if (AttackSystem->IsAiming())
 	{
-		AttackSystem->FireRangedAttack();
+		AttackSystem->FireRangedAttack(GetActorLocation(), GetActorRotation());
 	}
 }
 
@@ -502,8 +504,8 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 
 	if (HealthComponent->IsAlive())
 	{
-
 		AttackSystem->CancelAttack();
+		AttackSystem->CancelRangedAttack();
 		DisableAttackHitBox();
 
 		if (DamageMontage)

@@ -133,7 +133,7 @@ public:
 		void AimRangedAttack();
 
 	UFUNCTION()
-		void FireRangedAttack();
+		void FireRangedAttack(FVector Origin, FRotator Direction);
 
 	UFUNCTION()
 		void CancelRangedAttack();

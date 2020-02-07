@@ -140,7 +140,7 @@ void UAttackSystemComponent::AimRangedAttack()
 	}
 }
 
-void UAttackSystemComponent::FireRangedAttack()
+void UAttackSystemComponent::FireRangedAttack(FVector Origin, FRotator Direction)
 {
 	bIsAiming = false;
 	if (OwnerCharacterRef && RangedAttackStruct.FireAnimMontage)
@@ -151,9 +151,7 @@ void UAttackSystemComponent::FireRangedAttack()
 		{
 			FActorSpawnParameters SpawnParameters;
 			SpawnParameters.Owner = OwnerCharacterRef;
-			FVector Location = OwnerCharacterRef->GetActorLocation();
-			FRotator Rotation = OwnerCharacterRef->GetActorRotation();
-			AProjectile* FiredProjectile = GetWorld()->SpawnActor<AProjectile>(RangedAttackStruct.ProjectileToSpawn, Location, Rotation, SpawnParameters);
+			AProjectile* FiredProjectile = GetWorld()->SpawnActor<AProjectile>(RangedAttackStruct.ProjectileToSpawn, Origin, Direction, SpawnParameters);
 
 			FiredProjectile->SetDamage(RangedAttackStruct.Damage);
 
@@ -165,6 +163,10 @@ void UAttackSystemComponent::FireRangedAttack()
 void UAttackSystemComponent::CancelRangedAttack()
 {
 	bIsAiming = false;
+	if (OwnerCharacterRef && RangedAttackStruct.AimAnimMontage)
+	{
+		OwnerCharacterRef->StopAnimMontage(RangedAttackStruct.AimAnimMontage);
+	}
 }
 
 bool UAttackSystemComponent::IsAttacking()
