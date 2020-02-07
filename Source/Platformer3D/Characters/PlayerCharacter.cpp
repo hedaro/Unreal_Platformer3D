@@ -280,6 +280,24 @@ void APlayerCharacter::ReactToDamage(float AttackForce)
 	}
 }
 
+void APlayerCharacter::StartRangedAttack()
+{
+	if (AttackSystem->CanAttack() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
+	{
+		AttackSystem->AimRangedAttack();
+	}
+}
+
+void APlayerCharacter::EndRangedAttack()
+{
+	//if (AttackSystem->IsAiming() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
+	if (ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
+	{
+		//AttackSystem->FireRangedAttack();
+		Super::EndRangedAttack();
+	}
+}
+
 void APlayerCharacter::AddExp(float Experience)
 {
 	if (CurrentExp + Experience >= ExpToNextLevel)

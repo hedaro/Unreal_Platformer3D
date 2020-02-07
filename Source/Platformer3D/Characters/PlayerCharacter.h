@@ -103,6 +103,11 @@ public:
 
 	virtual void ReactToDamage(float AttackForce) override;
 
+	/*** Attack ***/
+	virtual void StartRangedAttack() override;
+
+	virtual void EndRangedAttack() override;
+
 	/*** Leveling ***/
 	UFUNCTION(BlueprintCallable)
 		void AddExp(float Experience);
