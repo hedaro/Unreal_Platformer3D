@@ -189,7 +189,6 @@ void APlayerCharacter::ExecuteRollDodge()
 	}
 
 	ResetMoveState();
-	AttackSystem->CancelRangedAttack();
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
@@ -284,12 +283,7 @@ void APlayerCharacter::StartRangedAttack()
 {
 	if (AttackSystem->CanAttack() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
 	{
-		WeaponMesh->SetHiddenInGame(true);
-		BowSheathMesh->SetHiddenInGame(true);
-		SwordSheathMesh->SetHiddenInGame(false);
-		BowMesh->SetHiddenInGame(false);
-		ArrowMesh->SetHiddenInGame(false);
-
+		ShowRangedWeaponMeshes();
 		AttackSystem->AimRangedAttack();
 	}
 }
@@ -298,11 +292,7 @@ void APlayerCharacter::EndRangedAttack()
 {
 	if (AttackSystem->IsAiming() && ItemsHeld.Contains(EItem_Types::IT_Arrow) && ItemsHeld[EItem_Types::IT_Arrow] > 0)
 	{
-		WeaponMesh->SetHiddenInGame(false);
-		BowSheathMesh->SetHiddenInGame(false);
-		SwordSheathMesh->SetHiddenInGame(true);
-		BowMesh->SetHiddenInGame(true);
-		ArrowMesh->SetHiddenInGame(true);
+		HideRangedWeaponMeshes();
 
 		FVector Location = ArrowMesh ? ArrowMesh->GetComponentLocation() : GetActorLocation() ;
 		FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
@@ -310,6 +300,12 @@ void APlayerCharacter::EndRangedAttack()
 
 		ItemsHeld[EItem_Types::IT_Arrow] = ItemsHeld[EItem_Types::IT_Arrow] - 1;
 	}
+}
+
+void APlayerCharacter::CancelAttack()
+{
+	Super::CancelAttack();
+	HideRangedWeaponMeshes();
 }
 
 void APlayerCharacter::RegisterWeaponSheathMesh(UStaticMeshComponent* MeshComponent)
@@ -353,6 +349,24 @@ void APlayerCharacter::RegisterArrowMesh(UStaticMeshComponent* MeshComponent)
 		ArrowMesh->SetCollisionProfileName(TEXT("NoCollision"));
 		ArrowMesh->SetHiddenInGame(true);
 	}
+}
+
+void APlayerCharacter::ShowRangedWeaponMeshes()
+{
+	WeaponMesh->SetHiddenInGame(true);
+	BowSheathMesh->SetHiddenInGame(true);
+	SwordSheathMesh->SetHiddenInGame(false);
+	BowMesh->SetHiddenInGame(false);
+	ArrowMesh->SetHiddenInGame(false);
+}
+
+void APlayerCharacter::HideRangedWeaponMeshes()
+{
+	WeaponMesh->SetHiddenInGame(false);
+	BowSheathMesh->SetHiddenInGame(false);
+	SwordSheathMesh->SetHiddenInGame(true);
+	BowMesh->SetHiddenInGame(true);
+	ArrowMesh->SetHiddenInGame(true);
 }
 
 void APlayerCharacter::AddExp(float Experience)

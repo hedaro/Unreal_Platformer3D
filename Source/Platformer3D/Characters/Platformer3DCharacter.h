@@ -227,6 +227,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void EndRangedAttack();
 
+	UFUNCTION(BlueprintCallable)
+		virtual void CancelAttack();
+
 	/*** Combat ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
 		float BaseDamage;

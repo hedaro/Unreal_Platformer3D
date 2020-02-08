@@ -121,6 +121,8 @@ public:
 
 	virtual void EndRangedAttack() override;
 
+	virtual void CancelAttack() override;
+
 	/*** Combat ***/
 	UFUNCTION(BlueprintCallable)
 		void RegisterWeaponSheathMesh(UStaticMeshComponent* MeshComponent);
@@ -133,6 +135,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void RegisterArrowMesh(UStaticMeshComponent* MeshComponent);
+
+	UFUNCTION(BlueprintCallable)
+		void ShowRangedWeaponMeshes();
+
+	UFUNCTION(BlueprintCallable)
+		void HideRangedWeaponMeshes();
 
 	/*** Leveling ***/
 	UFUNCTION(BlueprintCallable)
