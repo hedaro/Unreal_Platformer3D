@@ -87,13 +87,17 @@ protected:
 	/*** Combat ***/
 	UShapeComponent* AttackHitbox;
 	FTimerHandle DamageTimerHandle;
-	bool IsFlinching;
+	bool IsFlinching = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
 		UHealthActorComponent* HealthComponent;
 
 	UFUNCTION()
 		void EndReactToDamage();
+
+	/*** Stun ***/
+	bool IsStunned = false;
+	float StunGauge = 0.f;
 
 public:
 	/*** Movement ***/
@@ -265,5 +269,18 @@ public:
 
 	UFUNCTION(BlueprintPure)
 		bool GetIsAlive() const override;
+
+	/*** Stun ***/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float StunResistance = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float StunRecoveryRate = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+		UAnimMontage* StunMontage;
+
+	UFUNCTION(BlueprintPure)
+		float GetStunGauge() const;
 };
 

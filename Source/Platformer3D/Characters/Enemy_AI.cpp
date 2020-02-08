@@ -79,7 +79,7 @@ void AEnemy_AI::Tick(float DeltaTime)
 		GUIWidgetComponent->SetWorldRotation(TargetRotation);
 	}
 
-	if (HealthComponent->IsAlive())
+	if (HealthComponent->IsAlive() && !IsStunned)
 	{
 		if (!IsWaiting)
 		{

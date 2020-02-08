@@ -60,9 +60,23 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 
 	/***** Should camera be able to keep track of target even when performing blocking actions??? *****/
 	/***** In any case, player shouldn't change rotation *****/
-	if (TargetLocked && NearestTarget && !AttackSystem->IsAttacking() && !IsDashing && RollDodgeAnimation == 0)
+	if (TargetLocked && NearestTarget && !AttackSystem->IsAttacking() && !IsDashing && RollDodgeAnimation == 0 && !IsStunned)
 	{
 		LookAt(NearestTarget->GetActorLocation(), DeltaTime);
+	}
+
+	if (HealthComponent->IsAlive() && StunGauge > 0)
+	{
+		StunGauge -= StunRecoveryRate * DeltaTime * (IsStunned ? 2.f : 1.f);
+
+		if (IsStunned && StunGauge <= 0.f)
+		{
+			IsStunned = false;
+			if (StunMontage)
+			{
+				StopAnimMontage(StunMontage);
+			}
+		}
 	}
 }
 
@@ -514,19 +528,38 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 		AttackSystem->CancelRangedAttack();
 		DisableAttackHitBox();
 
-		if (DamageMontage)
+		if (!IsStunned)
 		{
+			StunGauge += 15.f;
+
+			if (StunGauge >= StunResistance)
+			{
+				IsStunned = true;
+				if (StunMontage)
+				{
+					PlayAnimMontage(StunMontage);
+				}
+				GetWorldTimerManager().ClearTimer(DamageTimerHandle);
+				EndReactToDamage();
+				return;
+			}
+
+			if (DamageMontage)
+			{
+				PlayAnimMontage(DamageMontage);
+			}
+
 			GetCharacterMovement()->StopMovementImmediately();
 			DisableMoveInput();
 			GetCharacterMovement()->GravityScale = 0.f;
 			IsFlinching = true;
-			PlayAnimMontage(DamageMontage);
 			GetCharacterMovement()->Launch(GetActorUpVector() * AttackForce);
-		}
 
-		GetWorldTimerManager().ClearTimer(DamageTimerHandle);
-		GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 1.f, false);
+			GetWorldTimerManager().ClearTimer(DamageTimerHandle);
+			GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 1.f, false);
+		}
 	}
+
 }
 
 void APlatformer3DCharacter::EndReactToDamage()
@@ -592,4 +625,9 @@ bool APlatformer3DCharacter::GetIsAlive() const
 	}
 
 	return false;
+}
+
+float APlatformer3DCharacter::GetStunGauge() const
+{
+	return StunGauge;
 }
