@@ -33,11 +33,21 @@ void UAttackSystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		AttackCooldownTimer -= DeltaTime;
 	}
+
+	if (RangedAttackCooldownTimer > 0.f)
+	{
+		RangedAttackCooldownTimer -= DeltaTime;
+	}
 }
 
 bool UAttackSystemComponent::CanAttack()
 {
 	return !bIsAiming && !SaveAttack && AttackCooldownTimer <= 0.f;
+}
+
+bool UAttackSystemComponent::CanRangedAttack()
+{
+	return !bIsAiming && !SaveAttack && RangedAttackCooldownTimer <= 0.f;
 }
 
 void UAttackSystemComponent::NormalAttack()
@@ -151,7 +161,7 @@ void UAttackSystemComponent::FireRangedAttack(FVector Origin, FRotator Direction
 
 			FiredProjectile->SetDamage(RangedAttackStruct.Damage);
 
-			AttackCooldownTimer = RangedAttackStruct.AttackCooldown;
+			RangedAttackCooldownTimer = RangedAttackStruct.AttackCooldown;
 		}
 	}
 }

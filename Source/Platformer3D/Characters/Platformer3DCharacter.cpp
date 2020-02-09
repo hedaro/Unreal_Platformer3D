@@ -440,7 +440,7 @@ void APlatformer3DCharacter::EndAttackLaunch()
 
 void APlatformer3DCharacter::StartRangedAttack()
 {
-	if (AttackSystem->CanAttack())
+	if (AttackSystem->CanRangedAttack())
 	{
 		AttackSystem->AimRangedAttack();
 	}

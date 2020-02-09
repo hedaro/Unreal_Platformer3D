@@ -85,7 +85,7 @@ public:
 		FVector2D DistanceToPlayerMinMax;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
-		float TargetPointDistanceTolerance = 50.f;
+		float TargetPointDistanceTolerance = 100.f;
 
 	virtual void DoDamage(AActor* Target) override;
 

@@ -78,7 +78,8 @@ private:
 	int NormalComboCount = 0;
 	int HeavyComboCount = 0;
 	int AerialComboCount = 0;
-	float AttackCooldownTimer;
+	float AttackCooldownTimer = 0.f;
+	float RangedAttackCooldownTimer = 0.f;
 	FTimerHandle AttackTimerHandle;
 	EAttackType CurrentComboType;
 
@@ -107,6 +108,9 @@ public:
 
 	UFUNCTION()
 		bool CanAttack();
+
+	UFUNCTION()
+		bool CanRangedAttack();
 
 	UFUNCTION()
 		void NormalAttack();

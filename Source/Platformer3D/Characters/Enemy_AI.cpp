@@ -130,13 +130,23 @@ void AEnemy_AI::SeekPlayer()
 {
 	if (HealthComponent->IsAlive() && !AttackSystem->IsAttackAnimation() && !IsFlinching)
 	{
-		//if (HealthComponent->GetCurrentHealth() <= 50.f)
-		//{
-		//	// Make some low health actions
-		//}
-		//else 
 		if (DistanceToPlayer() >= DistanceToPlayerMinMax.X)
 		{
+			if (AttackSystem->CanRangedAttack())
+			{
+				float Action = FMath::RandRange(1.f, 10.f);
+
+				if (Action >= 9.f)
+				{
+					FVector Location = WeaponMesh ? WeaponMesh->GetComponentLocation() : GetActorLocation();
+					//FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
+					FRotator Rotation = GetActorRotation();
+					AttackSystem->FireRangedAttack(Location, Rotation);
+					Wait(1.f);
+					return;
+				}
+			}
+
 			//Cast<AAIController>(Controller)->MoveToActor(PlayerCharacter, 5.f);
 			MoveForward(1.0);
 		}
