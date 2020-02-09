@@ -130,10 +130,6 @@ void UAttackSystemComponent::CancelAttack()
 void UAttackSystemComponent::AimRangedAttack()
 {
 	bIsAiming = true;
-	/*if (RangedAttackStruct.StartAnimMontage)
-	{
-		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.StartAnimMontage);
-	}*/
 	if (OwnerCharacterRef && RangedAttackStruct.AimAnimMontage)
 	{
 		OwnerCharacterRef->PlayAnimMontage(RangedAttackStruct.AimAnimMontage);
@@ -199,16 +195,28 @@ int UAttackSystemComponent::GetCurrentCombo()
 	switch (CurrentComboType)
 	{
 	case EAttackType::AT_NormalAttack:
+		if (NormalAttacksArray.Num() <= 0)
+		{
+			return 0;
+		}
 		CurrentAttack = NormalAttacksArray[NormalComboCount];
 		ComboCountSize = NormalAttacksArray.Num();
 		ComboCount = NormalComboCount;
 		break;
 	case EAttackType::AT_HeavyAttack:
+		if (HeavyAttacksArray.Num() <= 0)
+		{
+			return 0;
+		}
 		CurrentAttack = HeavyAttacksArray[HeavyComboCount];
 		ComboCountSize = HeavyAttacksArray.Num();
 		ComboCount = HeavyComboCount;
 		break;
 	case EAttackType::AT_AerialAttack:
+		if (AerialAttacksArray.Num() <= 0)
+		{
+			return 0;
+		}
 		CurrentAttack = AerialAttacksArray[AerialComboCount];
 		ComboCountSize = AerialAttacksArray.Num();
 		ComboCount = AerialComboCount;

@@ -44,9 +44,6 @@ struct FRangedAttack
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-		UAnimMontage* StartAnimMontage;
-
-	UPROPERTY(EditAnywhere)
 		UAnimMontage* AimAnimMontage;
 
 	UPROPERTY(EditAnywhere)

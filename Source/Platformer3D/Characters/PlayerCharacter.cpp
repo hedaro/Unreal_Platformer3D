@@ -57,6 +57,14 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (AttackSystem->IsAiming() && FollowCamera->FieldOfView > 40.f)
+	{
+		FollowCamera->FieldOfView = FMath::Lerp(40.f, 90.f, 0.4f * DeltaTime);
+	}
+	else if (FollowCamera->FieldOfView < 90.f)
+	{
+		FollowCamera->FieldOfView = FMath::Lerp(90.f, 40.f, 0.4f * DeltaTime);
+	}
 }
 
 // Called to bind functionality to input
@@ -131,6 +139,10 @@ void APlayerCharacter::ToggleCameraMode()
 		FindNearestTarget();
 		break;
 	case 1:
+		if (AttackSystem->IsAiming())
+		{
+			return;
+		}
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		bUseControllerRotationYaw = false;
 		CameraMode = 0;
@@ -285,6 +297,11 @@ void APlayerCharacter::StartRangedAttack()
 	{
 		ShowRangedWeaponMeshes();
 		AttackSystem->AimRangedAttack();
+
+		if (CameraMode == 0)
+		{
+			ToggleCameraMode();
+		}
 	}
 }
 
@@ -295,10 +312,16 @@ void APlayerCharacter::EndRangedAttack()
 		HideRangedWeaponMeshes();
 
 		FVector Location = ArrowMesh ? ArrowMesh->GetComponentLocation() : GetActorLocation() ;
-		FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
+		//FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
+		FRotator Rotation = GetActorRotation() ;
 		AttackSystem->FireRangedAttack(Location, Rotation);
 
 		ItemsHeld[EItem_Types::IT_Arrow] = ItemsHeld[EItem_Types::IT_Arrow] - 1;
+
+		if (CameraMode == 1 && !TargetLocked)
+		{
+			ToggleCameraMode();
+		}
 	}
 }
 
@@ -306,6 +329,7 @@ void APlayerCharacter::CancelAttack()
 {
 	Super::CancelAttack();
 	HideRangedWeaponMeshes();
+	FollowCamera->FieldOfView = 90.f;
 }
 
 void APlayerCharacter::RegisterWeaponSheathMesh(UStaticMeshComponent* MeshComponent)
