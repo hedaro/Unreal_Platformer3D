@@ -2,3 +2,13 @@
 
 
 #include "LockOn_Interface.h"
+
+void ILockOn_Interface::ClearLockOn()
+{
+
+}
+
+bool ILockOn_Interface::IsValidTarget()
+{
+	return true;
+}

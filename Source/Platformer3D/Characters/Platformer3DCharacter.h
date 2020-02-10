@@ -59,7 +59,7 @@ protected:
 
 	/*** Lock On ***/
 	bool TargetLocked;
-	AActor* NearestTarget;
+	AActor* CurrentTarget;
 
 	/*** Jump ***/
 	int JumpCount = 0;
@@ -201,6 +201,9 @@ public:
 
 	UFUNCTION()
 		virtual void LockOffTarget();
+
+	UFUNCTION(BlueprintPure)
+		AActor* GetCurrentTarget() const;
 
 	/*** Attack ***/
 	UFUNCTION(BlueprintCallable)

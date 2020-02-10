@@ -6,7 +6,7 @@
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
-#include "Components/ShapeComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -117,7 +117,7 @@ void AEnemy_AI::OnSeePawn(APawn* OtherPawn)
 	{
 		CancelWait();
 		SeenPlayer = true;
-		if (!NearestTarget)
+		if (!CurrentTarget)
 		{
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			bUseControllerRotationYaw = true;
@@ -186,6 +186,25 @@ void AEnemy_AI::DoDamage(AActor* Target)
 	}
 }
 
+float AEnemy_AI::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (!HealthComponent->IsAlive())
+	{
+		if (EventInstigator == PlayerCharacter->GetController())
+		{
+			ClearLockOn();
+		}
+
+		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+		
+		GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AEnemy_AI::Despawn, 10.f, false);
+	}
+
+	return ActualDamage;
+}
+
 void AEnemy_AI::ReactToDamage(float AttackForce)
 {
 	Super::ReactToDamage(AttackForce);
@@ -196,6 +215,12 @@ void AEnemy_AI::ReactToDamage(float AttackForce)
 
 		PlayerCharacter->AddExp(ExpGiven);
 	}
+}
+
+void AEnemy_AI::Despawn()
+{
+	// Make sure other actors don't have a referene to this one before destroying
+	Destroy();
 }
 
 float AEnemy_AI::DistanceToPlayer()
@@ -232,4 +257,17 @@ void AEnemy_AI::MoveToTargetPoint()
 		CurrentTargetPointIndex = (CurrentTargetPointIndex + 1) % TargetPoints.Num();
 		Wait(5.f);
 	}
+}
+
+void AEnemy_AI::ClearLockOn()
+{
+	if (PlayerCharacter->GetCurrentTarget() == this)
+	{
+		PlayerCharacter->LockOffTarget();
+	}
+}
+
+bool AEnemy_AI::IsValidTarget()
+{
+	return HealthComponent->IsAlive();
 }

@@ -60,9 +60,9 @@ void APlatformer3DCharacter::Tick(float DeltaTime)
 
 	/***** Should camera be able to keep track of target even when performing blocking actions??? *****/
 	/***** In any case, player shouldn't change rotation *****/
-	if (TargetLocked && NearestTarget && !AttackSystem->IsAttacking() && !IsDashing && RollDodgeAnimation == 0 && !IsStunned)
+	if (TargetLocked && CurrentTarget && !AttackSystem->IsAttacking() && !IsDashing && RollDodgeAnimation == 0 && !IsStunned)
 	{
-		LookAt(NearestTarget->GetActorLocation(), DeltaTime);
+		LookAt(CurrentTarget->GetActorLocation(), DeltaTime);
 	}
 
 	if (HealthComponent->IsAlive() && StunGauge > 0)
@@ -368,14 +368,19 @@ int APlatformer3DCharacter::GetRollDodgeAnimation()
 
 void APlatformer3DCharacter::LockOnTarget(AActor* Target)
 {
-	NearestTarget = Target;
+	CurrentTarget = Target;
 	TargetLocked = true;
 }
 
 void APlatformer3DCharacter::LockOffTarget()
 {
 	TargetLocked = false;
-	NearestTarget = nullptr;
+	CurrentTarget = nullptr;
+}
+
+AActor* APlatformer3DCharacter::GetCurrentTarget() const
+{
+	return CurrentTarget;
 }
 
 void APlatformer3DCharacter::StartAttack()
@@ -592,14 +597,13 @@ float APlatformer3DCharacter::TakeDamage(float Damage, struct FDamageEvent const
 		if (GetCurrentHealth() <= 0)
 		{
 			GetCharacterMovement()->DisableMovement();
-			// Lock off target and other stuff people do when they die
+
 			if (DeathMontage)
 			{
 				LockOffTarget();
 				DeathMontage->bEnableAutoBlendOut = false;
 				PlayAnimMontage(DeathMontage);
 			}
-			// Game Over or something
 		}
 	}
 

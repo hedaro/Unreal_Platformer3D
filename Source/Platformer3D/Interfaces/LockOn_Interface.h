@@ -25,9 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "LockOn")
 	void LockOn();
 
-	/*UFUNCTION(Category = "LockOn")
-	virtual float GetDistanceFromPlayer() = 0;
+	UFUNCTION(Category = "LockOn")
+	virtual void ClearLockOn();
 
 	UFUNCTION(Category = "LockOn")
-	virtual float GetDistanceFrom(AActor* OtherActor) = 0;*/
+	virtual bool IsValidTarget();
 };

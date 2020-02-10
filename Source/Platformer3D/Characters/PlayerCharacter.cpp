@@ -261,18 +261,22 @@ void APlayerCharacter::FindNearestTarget()
 						https://answers.unrealengine.com/questions/43038/buginerfacecast-returns-null-for-blueprint-classes.html
 				*****/
 				// ILockOn_Interface* Target = Cast<ILockOn_Interface>(*It);
+				ILockOn_Interface* LockOnObject = Cast<ILockOn_Interface>((*It));
 
-				float DistanceToTarget = GetDistanceTo(*It);
-				if (DistanceToTarget < ClosestTargetDistance)
+				if (LockOnObject->IsValidTarget())
 				{
-					FCollisionQueryParams TraceParameters(FName(TEXT("")), false, this);
-
-					if (World->LineTraceSingleByChannel(HitResult, GetActorLocation(), (*It)->GetActorLocation(), ECC_PhysicsBody, TraceParameters))
+					float DistanceToTarget = GetDistanceTo(*It);
+					if (DistanceToTarget < ClosestTargetDistance)
 					{
-						if (HitResult.Actor.Get() == *It)
+						FCollisionQueryParams TraceParameters(FName(TEXT("")), false, this);
+
+						if (World->LineTraceSingleByChannel(HitResult, GetActorLocation(), (*It)->GetActorLocation(), ECC_PhysicsBody, TraceParameters))
 						{
-							ClosestTargetDistance = DistanceToTarget;
-							LockOnTarget(*It);
+							if (HitResult.Actor.Get() == *It)
+							{
+								ClosestTargetDistance = DistanceToTarget;
+								LockOnTarget(*It);
+							}
 						}
 					}
 				}

@@ -63,6 +63,7 @@ private:
 
 	UFUNCTION()
 	float DistanceToPlayer();
+	FTimerHandle DeathTimerHandle;
 
 	/*** Combat ***/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
@@ -89,11 +90,23 @@ public:
 
 	virtual void DoDamage(AActor* Target) override;
 
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
 	virtual void ReactToDamage(float AttackForce) override;
+
+	UFUNCTION(BlueprintCallable)
+		void Despawn();
 
 	UFUNCTION(BlueprintCallable)
 		void Wait(float Seconds);
 
 	UFUNCTION(BlueprintCallable)
 		void CancelWait();
+
+	/*** LockOn Interface ***/
+	UFUNCTION(BlueprintCallable)
+	virtual void ClearLockOn() override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool IsValidTarget() override;
 };
