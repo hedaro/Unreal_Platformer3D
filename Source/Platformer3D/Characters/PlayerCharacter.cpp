@@ -263,7 +263,7 @@ void APlayerCharacter::FindNearestTarget()
 				// ILockOn_Interface* Target = Cast<ILockOn_Interface>(*It);
 				ILockOn_Interface* LockOnObject = Cast<ILockOn_Interface>((*It));
 
-				if (LockOnObject->IsValidTarget())
+				if (LockOnObject && LockOnObject->IsValidTarget())
 				{
 					float DistanceToTarget = GetDistanceTo(*It);
 					if (DistanceToTarget < ClosestTargetDistance)
