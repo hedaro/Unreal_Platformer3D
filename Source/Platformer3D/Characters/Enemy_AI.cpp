@@ -199,6 +199,8 @@ float AEnemy_AI::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent
 
 		GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
 		
+		DropLoot();
+
 		GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AEnemy_AI::Despawn, 10.f, false);
 	}
 
@@ -214,6 +216,16 @@ void AEnemy_AI::ReactToDamage(float AttackForce)
 		SeenPlayer = false;
 
 		PlayerCharacter->AddExp(ExpGiven);
+	}
+}
+
+void AEnemy_AI::DropLoot()
+{
+	if (LootList.Num() > 0)
+	{
+		int ItemDrop = FMath::RandRange(0, LootList.Num());
+
+		GetWorld()->SpawnActor<APickUpItem>(LootList[ItemDrop], GetActorLocation(), GetActorRotation());
 	}
 }
 

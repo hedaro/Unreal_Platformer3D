@@ -13,6 +13,7 @@
 #include "Characters/PlayerCharacter.h"
 #include "Interfaces/LockOn_Interface.h"
 #include "Widgets/EnemyGUI_Widget.h"
+#include "Items/PickUpItem.h"
 
 #include "Enemy_AI.generated.h"
 
@@ -72,6 +73,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 		UBoxComponent* AssassinationArea;
 
+	UFUNCTION()
+		void DropLoot();
+
 	/*** Temporary Combat variables (Need refactor) ***/
 	int CurrentCombo;
 
@@ -87,6 +91,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 		float TargetPointDistanceTolerance = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+		TArray<TSubclassOf<APickUpItem>> LootList;
 
 	virtual void DoDamage(AActor* Target) override;
 
