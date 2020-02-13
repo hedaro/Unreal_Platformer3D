@@ -142,7 +142,7 @@ void AEnemy_AI::SeekPlayer()
 					//FRotator Rotation = ArrowMesh ? ArrowMesh->GetComponentRotation() : GetActorRotation() ;
 					FRotator Rotation = GetActorRotation();
 					AttackSystem->FireRangedAttack(Location, Rotation);
-					Wait(1.f);
+					Wait(0.5f);
 					return;
 				}
 			}

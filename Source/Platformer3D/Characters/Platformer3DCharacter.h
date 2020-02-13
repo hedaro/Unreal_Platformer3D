@@ -101,6 +101,12 @@ protected:
 
 public:
 	/*** Movement ***/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Movement")
+		float DodgeLaunchForce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float RollLaunchForce;
+
 	/** Called via input to turn at a given rate. */
 	void TurnAtRate(float Rate);
 

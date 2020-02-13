@@ -310,7 +310,7 @@ void APlatformer3DCharacter::RollDodge()
 void APlatformer3DCharacter::ExecuteRollDodge()
 {
 	//If character is doing a blocking animation, they can´t roll/dodge (possible to make this check on RollDodge() to prevent creation of unnecessary timers).
-	if (GetCharacterMovement()->IsFalling() || AttackSystem->IsAttackAnimation())
+	if (GetCharacterMovement()->IsFalling() || AttackSystem->IsAttackAnimation() || IsFlinching)
 	{
 		ResetRollDodgeAnimation();
 		return;
@@ -329,6 +329,7 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 	//if (!TargetLocked)
 	{
 		RollDodgeAnimation += 1;
+		GetCharacterMovement()->Velocity = GetActorForwardVector() * RollLaunchForce;
 	}
 	/***** Find a way to remove dependance on specific keys!!!!!!!!!! *****/
 	/*else
@@ -351,12 +352,14 @@ void APlatformer3DCharacter::ExecuteRollDodge()
 		}
 	}*/
 
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PawnIFrame"));
 	float ResetTimer = RollDodgeAnimation <= 4 ? 0.7 : 0.3;
 	GetWorldTimerManager().SetTimer(RollTimerHandle, this, &APlatformer3DCharacter::ResetRollDodgeAnimation, ResetTimer, false);
 }
 
 void APlatformer3DCharacter::ResetRollDodgeAnimation()
 {
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 	RollDodgeAction = 0;
 	RollDodgeAnimation = 0;
 }
@@ -557,7 +560,7 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 				return;
 			}
 
-			if (DamageMontage)
+			if (RollDodgeAnimation == 0 && DamageMontage)
 			{
 				PlayAnimMontage(DamageMontage);
 			}
@@ -569,7 +572,7 @@ void APlatformer3DCharacter::ReactToDamage(float AttackForce)
 			GetCharacterMovement()->Launch(GetActorUpVector() * AttackForce);
 
 			GetWorldTimerManager().ClearTimer(DamageTimerHandle);
-			GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 1.f, false);
+			GetWorldTimerManager().SetTimer(DamageTimerHandle, this, &APlatformer3DCharacter::EndReactToDamage, 0.6f, false);
 		}
 	}
 

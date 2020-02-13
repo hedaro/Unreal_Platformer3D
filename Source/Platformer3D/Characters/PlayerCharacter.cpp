@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
+#include "Components/CapsuleComponent.h" //Remove with roll dodge
 //Custom libraries
 #include "Interfaces/LockOn_Interface.h"
 
@@ -179,7 +180,7 @@ void APlayerCharacter::RollDodge()
 void APlayerCharacter::ExecuteRollDodge()
 {
 	//If character is doing a blocking animation, they can´t roll/dodge (possible to make this check on RollDodge() to prevent creation of unnecessary timers).
-	if (GetCharacterMovement()->IsFalling() || AttackSystem->IsAttackAnimation())
+	if (GetCharacterMovement()->IsFalling() || AttackSystem->IsAttackAnimation() || IsFlinching)
 	{
 		ResetRollDodgeAnimation();
 		return;
@@ -201,18 +202,22 @@ void APlayerCharacter::ExecuteRollDodge()
 	}
 
 	ResetMoveState();
+	GetMovementComponent()->StopMovementImmediately();
+	GetCharacterMovement()->GroundFriction = 8.f;
 
 	// Little hack to set animation index to 0 or 4, to offset wether action is a roll or a dodge
 	// Followed by a galaxy brain hack, if there is no direction pressed make animation index 0 so no animation will be played
 	/***** Find a way to remove dependance on specific keys!!!!!!!!!! *****/
-	RollDodgeAnimation = ((RollDodgeAction - 1) * 4) * (KeyBuffer != KeyNone);
+	RollDodgeAnimation = ((RollDodgeAction - 1) * 4);// * (KeyBuffer != KeyNone);
+	float LaunchForce = RollDodgeAction > 1 ? DodgeLaunchForce : RollLaunchForce;
 
 	/***** Find a way to remove dependance on specific keys!!!!!!!!!! *****/
 	if (CameraMode == 0)
 	{
-		if (KeyBuffer != KeyNone)
+		//if (KeyBuffer != KeyNone)
 		{
 			RollDodgeAnimation += 1;
+			GetCharacterMovement()->Velocity = GetActorForwardVector() * LaunchForce;
 		}
 	}
 	else
@@ -220,22 +225,27 @@ void APlayerCharacter::ExecuteRollDodge()
 		if (KeyBuffer == EKeys::W || KeyBuffer == EKeys::Gamepad_LeftStick_Up)
 		{
 			RollDodgeAnimation += 1;
+			GetCharacterMovement()->Velocity = GetActorForwardVector() * LaunchForce;
 		}
 		else if (KeyBuffer == EKeys::A || KeyBuffer == EKeys::Gamepad_LeftStick_Left)
 		{
 			RollDodgeAnimation += 2;
-		}
-		else if (KeyBuffer == EKeys::S || KeyBuffer == EKeys::Gamepad_LeftStick_Down)
-		{
-			RollDodgeAnimation += 3;
+			GetCharacterMovement()->Velocity = GetActorRightVector() * -LaunchForce;
 		}
 		else if (KeyBuffer == EKeys::D || KeyBuffer == EKeys::Gamepad_LeftStick_Right)
 		{
 			RollDodgeAnimation += 4;
+			GetCharacterMovement()->Velocity = GetActorRightVector() * LaunchForce;
+		}
+		else// if (KeyBuffer == EKeys::S || KeyBuffer == EKeys::Gamepad_LeftStick_Down)
+		{
+			RollDodgeAnimation += 3;
+			GetCharacterMovement()->Velocity = GetActorForwardVector() * -LaunchForce;
 		}
 	}
 
 	float ResetTimer = RollDodgeAnimation <= 4 ? 0.7 : 0.3;
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PawnIFrame"));
 	GetWorldTimerManager().SetTimer(RollTimerHandle, this, &APlatformer3DCharacter::ResetRollDodgeAnimation, ResetTimer, false);
 }
 
