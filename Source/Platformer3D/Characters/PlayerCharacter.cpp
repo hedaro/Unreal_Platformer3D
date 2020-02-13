@@ -407,6 +407,21 @@ void APlayerCharacter::HideRangedWeaponMeshes()
 	ArrowMesh->SetHiddenInGame(true);
 }
 
+float APlayerCharacter::GetMaxLimit() const
+{
+	return MaxLimitGauge;
+}
+
+float APlayerCharacter::GetLimitGauge() const
+{
+	return LimitGauge;
+}
+
+void APlayerCharacter::AddLimit(float Limit)
+{
+	LimitGauge = FMath::Clamp(LimitGauge + Limit, 0.f, MaxLimitGauge);
+}
+
 void APlayerCharacter::AddExp(float Experience)
 {
 	if (CurrentExp + Experience >= ExpToNextLevel)

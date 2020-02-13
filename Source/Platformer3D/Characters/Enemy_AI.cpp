@@ -236,6 +236,8 @@ void AEnemy_AI::ReactToDamage(float AttackForce)
 
 		PlayerCharacter->AddExp(ExpGiven);
 	}
+
+	PlayerCharacter->AddLimit(10.f);
 }
 
 void AEnemy_AI::DropLoot()

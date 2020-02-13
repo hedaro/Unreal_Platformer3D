@@ -84,6 +84,10 @@ private:
 	/*** Camera Control ***/
 	int CameraMode = 0;
 
+	/*** Combat ***/
+	float MaxLimitGauge = 100.f;
+	float LimitGauge = 0.f;
+
 	/*** Leveling ***/
 	float CurrentExp;
 	float ExpToNextLevel = 100.f;
@@ -141,6 +145,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void HideRangedWeaponMeshes();
+
+	UFUNCTION(BlueprintPure)
+		float GetMaxLimit() const;
+
+	UFUNCTION(BlueprintPure)
+		float GetLimitGauge() const;
+
+	UFUNCTION(BlueprintCallable)
+		void AddLimit(float Limit);
 
 	/*** Leveling ***/
 	UFUNCTION(BlueprintCallable)
