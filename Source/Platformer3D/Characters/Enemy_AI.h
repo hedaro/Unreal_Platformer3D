@@ -14,6 +14,7 @@
 #include "Interfaces/LockOn_Interface.h"
 #include "Widgets/EnemyGUI_Widget.h"
 #include "Items/PickUpItem.h"
+#include "Widgets/FloatingText_Widget.h"
 
 #include "Enemy_AI.generated.h"
 
@@ -94,6 +95,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 		TArray<TSubclassOf<APickUpItem>> LootList;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+		TSubclassOf<UFloatingText_Widget> FloatingDamage;
 
 	virtual void DoDamage(AActor* Target) override;
 

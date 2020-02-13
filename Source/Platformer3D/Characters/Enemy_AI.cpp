@@ -204,6 +204,25 @@ float AEnemy_AI::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent
 		GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AEnemy_AI::Despawn, 10.f, false);
 	}
 
+	if (FloatingDamage)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
+		UFloatingText_Widget* DamageNumber = CreateWidget<UFloatingText_Widget>(PlayerController, FloatingDamage);
+		
+		if (DamageNumber)
+		{
+			FNumberFormattingOptions NumberFormat;
+			NumberFormat.MinimumIntegralDigits = 0;
+			NumberFormat.MaximumIntegralDigits = 3;
+			NumberFormat.MinimumFractionalDigits = 0;
+			NumberFormat.MaximumFractionalDigits = 1;
+
+			FVector2D ScreenPosition;
+			UGameplayStatics::ProjectWorldToScreen(PlayerController, GetActorLocation(), ScreenPosition);
+
+			DamageNumber->SetUpWidget(FText::AsNumber(ActualDamage, &NumberFormat), ScreenPosition, 1.f);
+		}
+	}
 	return ActualDamage;
 }
 
@@ -223,7 +242,7 @@ void AEnemy_AI::DropLoot()
 {
 	if (LootList.Num() > 0)
 	{
-		int ItemDrop = FMath::RandRange(0, LootList.Num());
+		int ItemDrop = FMath::RandRange(0, LootList.Num() - 1);
 
 		GetWorld()->SpawnActor<APickUpItem>(LootList[ItemDrop], GetActorLocation(), GetActorRotation());
 	}
