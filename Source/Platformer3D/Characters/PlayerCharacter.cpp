@@ -37,6 +37,9 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// Create Attack System Component
+	SkillsComponent = CreateDefaultSubobject<USkillsComponent>(TEXT("Skills"));
 }
 
 // Called when the game starts or when spawned
@@ -494,16 +497,22 @@ void APlayerCharacter::HideSkillsMenu()
 	}
 }
 
-FSkill APlayerCharacter::GetSkill(ESkills Skill) const
+USkillsComponent* APlayerCharacter::GetSkillsComponent() const
 {
-	const FSkill* SkillData = Skills.Find(Skill);
+	return SkillsComponent;
+}
 
-	if (SkillData)
+void APlayerCharacter::PurchaseSkill(ESkills Skill)
+{
+	if (SkillsComponent->FindSkill(Skill) && SkillsComponent->IsSkillAvailable(Skill))
 	{
-		return *SkillData;
+		FSkill SkillData = SkillsComponent->GetSkill(Skill);
+		if (SkillData.Cost <= SkillPoints)
+		{
+			SpendSkillPoints(SkillData.Cost);
+			SkillsComponent->AcquireSkill(Skill);
+		}
 	}
-
-	return FSkill{ ESkills::ES_None, 0, true };
 }
 
 int APlayerCharacter::SpendSkillPoints(int Amount)
@@ -521,41 +530,10 @@ int APlayerCharacter::GetSkillPoints() const
 	return SkillPoints;
 }
 
-bool APlayerCharacter::IsSkillAvailable(ESkills Skill) const
-{
-	const FSkill* SkillData = Skills.Find(Skill);
-
-	if (!SkillData)
-	{
-		return false;
-	}
-	else if (SkillData->SkillRequired != ESkills::ES_None)
-	{
-		const FSkill* SkillRequired = Skills.Find(SkillData->SkillRequired);
-		if (SkillRequired)
-		{
-			return SkillRequired->Acquired && !SkillData->Acquired;
-		}
-	}
-
-	return !SkillData->Acquired;
-}
-
-void APlayerCharacter::AcquireSkill(ESkills Skill)
-{
-	if (Skills.Contains(Skill) && IsSkillAvailable(Skill))
-	{
-		if (SkillPoints >= Skills[Skill].Cost)
-		{
-			SpendSkillPoints(Skills[Skill].Cost);
-			Skills[Skill].Acquired = true;
-		}
-	}
-}
-
 void APlayerCharacter::StartDash()
 {
-	if (Skills.Contains(ESkills::ES_Dash) && Skills[ESkills::ES_Dash].Acquired)
+	
+	if (SkillsComponent->IsSkillAcquired(ESkills::ES_Dash))
 	{
 		Super::StartDash();
 	}
@@ -563,7 +541,7 @@ void APlayerCharacter::StartDash()
 
 void APlayerCharacter::StartHeavyAttack()
 {
-	if (Skills.Contains(ESkills::ES_HeavyAttack) && Skills[ESkills::ES_HeavyAttack].Acquired)
+	if (SkillsComponent->IsSkillAcquired(ESkills::ES_HeavyAttack))
 	{
 		Super::StartHeavyAttack();
 	}
@@ -580,7 +558,7 @@ void APlayerCharacter::SaveGame()
 	SaveData.ExpToNextLevel = ExpToNextLevel;
 	SaveData.PlayerLevel = PlayerLevel;
 	SaveData.SkillPoints = SkillPoints;
-	SaveData.Skills = Skills;
+	SaveData.Skills = SkillsComponent->GetSkillsData();
 	SaveData.ItemsHeld = ItemsHeld;
 
 	APlatformer3DPlayerController* PlayerController = Cast<APlatformer3DPlayerController>(Controller);
@@ -605,7 +583,7 @@ void APlayerCharacter::LoadGame()
 		ExpToNextLevel = SaveData.ExpToNextLevel;
 		PlayerLevel = SaveData.PlayerLevel;
 		SkillPoints = SaveData.SkillPoints;
-		Skills = SaveData.Skills;
+		SkillsComponent->SetSkillsData(SaveData.Skills);
 		ItemsHeld = SaveData.ItemsHeld;
 		UE_LOG(LogTemp, Warning, TEXT("Load Successful"));
 	}

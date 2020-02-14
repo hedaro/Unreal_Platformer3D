@@ -9,24 +9,9 @@
 // Custom libraries
 #include "Characters/Platformer3DCharacter.h"
 #include "Enums/Item_Types.h"
-#include "Enums/Skills.h"
+#include "Components/SkillsComponent.h"
 
 #include "PlayerCharacter.generated.h"
-
-USTRUCT(BlueprintType)
-struct FSkill
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	ESkills SkillRequired;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int Cost;
-
-	UPROPERTY(VisibleAnywhere)
-	bool Acquired;
-};
 
 UCLASS()
 class PLATFORMER3D_API APlayerCharacter : public APlatformer3DCharacter
@@ -94,6 +79,10 @@ private:
 	float ExpToNextLevel = 100.f;
 	int PlayerLevel = 1;
 	int SkillPoints = 1;
+
+	/*** Skills ***/
+	UPROPERTY(Category = Skills, VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		USkillsComponent* SkillsComponent;
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* SwordSheathMesh;
@@ -174,9 +163,6 @@ public:
 
 	/*** Skills System ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
-	TMap<ESkills, FSkill> Skills;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 		TSubclassOf<class UUserWidget> SkillsMenuWidget;
 
 	UPROPERTY()
@@ -191,20 +177,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void HideSkillsMenu();
 
+	UFUNCTION(BlueprintPure)
+		USkillsComponent* GetSkillsComponent() const;
+
+	UFUNCTION(BlueprintCallable)
+		void PurchaseSkill(ESkills Skill);
+
 	UFUNCTION(BlueprintCallable)
 		int SpendSkillPoints(int Amount);
 
 	UFUNCTION(BlueprintPure)
 		int GetSkillPoints() const;
-
-	UFUNCTION(BlueprintPure)
-		FSkill GetSkill(ESkills Skill) const;
-
-	UFUNCTION(BlueprintPure)
-		bool IsSkillAvailable(ESkills Skill) const;
-
-	UFUNCTION(BlueprintCallable)
-		void AcquireSkill(ESkills Skill);
 
 	/*** Learnable Actions ***/
 	virtual void StartDash() override;
