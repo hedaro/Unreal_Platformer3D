@@ -9,6 +9,7 @@
 // Custom libraries
 #include "Characters/Platformer3DCharacter.h"
 #include "Enums/Item_Types.h"
+#include "Enums/Skills.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -18,7 +19,7 @@ struct FSkill
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	FString SkillRequired;
+	ESkills SkillRequired;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int Cost;
@@ -173,7 +174,7 @@ public:
 
 	/*** Skills System ***/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
-	TMap<FString, FSkill> Skills;
+	TMap<ESkills, FSkill> Skills;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 		TSubclassOf<class UUserWidget> SkillsMenuWidget;
@@ -197,13 +198,13 @@ public:
 		int GetSkillPoints() const;
 
 	UFUNCTION(BlueprintPure)
-		FSkill GetSkill(FString SkillName) const;
+		FSkill GetSkill(ESkills Skill) const;
 
 	UFUNCTION(BlueprintPure)
-		bool IsSkillAvailable(FString SkillName) const;
+		bool IsSkillAvailable(ESkills Skill) const;
 
 	UFUNCTION(BlueprintCallable)
-		void AcquireSkill(FString SkillName);
+		void AcquireSkill(ESkills Skill);
 
 	/*** Learnable Actions ***/
 	virtual void StartDash() override;

@@ -44,7 +44,7 @@ struct FSaveData
 		int SkillPoints;
 
 	UPROPERTY(VisibleAnywhere)
-		TMap<FString, FSkill> Skills;
+		TMap<ESkills, FSkill> Skills;
 
 	UPROPERTY(VisibleAnywhere)
 		TMap<EItem_Types, int> ItemsHeld;

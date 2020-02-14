@@ -494,16 +494,16 @@ void APlayerCharacter::HideSkillsMenu()
 	}
 }
 
-FSkill APlayerCharacter::GetSkill(FString SkillName) const
+FSkill APlayerCharacter::GetSkill(ESkills Skill) const
 {
-	const FSkill* Skill = Skills.Find(SkillName);
+	const FSkill* SkillData = Skills.Find(Skill);
 
-	if (Skill)
+	if (SkillData)
 	{
-		return *Skill;
+		return *SkillData;
 	}
 
-	return FSkill{ TEXT(""), 0, true };
+	return FSkill{ ESkills::ES_None, 0, true };
 }
 
 int APlayerCharacter::SpendSkillPoints(int Amount)
@@ -521,42 +521,41 @@ int APlayerCharacter::GetSkillPoints() const
 	return SkillPoints;
 }
 
-bool APlayerCharacter::IsSkillAvailable(FString SkillName) const
+bool APlayerCharacter::IsSkillAvailable(ESkills Skill) const
 {
-	const FSkill* Skill = Skills.Find(SkillName);
+	const FSkill* SkillData = Skills.Find(Skill);
 
-	if (!Skill)
+	if (!SkillData)
 	{
 		return false;
 	}
-	else if (Skill->SkillRequired != TEXT(""))
+	else if (SkillData->SkillRequired != ESkills::ES_None)
 	{
-		const FSkill* SkillRequired = Skills.Find(Skill->SkillRequired);
+		const FSkill* SkillRequired = Skills.Find(SkillData->SkillRequired);
 		if (SkillRequired)
 		{
-			return SkillRequired->Acquired && !Skill->Acquired;
+			return SkillRequired->Acquired && !SkillData->Acquired;
 		}
 	}
 
-	return !Skill->Acquired;
+	return !SkillData->Acquired;
 }
 
-void APlayerCharacter::AcquireSkill(FString SkillName)
+void APlayerCharacter::AcquireSkill(ESkills Skill)
 {
-	if (Skills.Contains(SkillName) && IsSkillAvailable(SkillName))
+	if (Skills.Contains(Skill) && IsSkillAvailable(Skill))
 	{
-		if (SkillPoints >= Skills[SkillName].Cost)
+		if (SkillPoints >= Skills[Skill].Cost)
 		{
-			SpendSkillPoints(Skills[SkillName].Cost);
-			Skills[SkillName].Acquired = true;
+			SpendSkillPoints(Skills[Skill].Cost);
+			Skills[Skill].Acquired = true;
 		}
 	}
 }
 
 void APlayerCharacter::StartDash()
 {
-	FString SkillName = TEXT("Dash");
-	if (Skills.Contains(SkillName) && Skills[SkillName].Acquired)
+	if (Skills.Contains(ESkills::ES_Dash) && Skills[ESkills::ES_Dash].Acquired)
 	{
 		Super::StartDash();
 	}
@@ -564,8 +563,7 @@ void APlayerCharacter::StartDash()
 
 void APlayerCharacter::StartHeavyAttack()
 {
-	FString SkillName = TEXT("Heavy Attack");
-	if (Skills.Contains(SkillName) && Skills[SkillName].Acquired)
+	if (Skills.Contains(ESkills::ES_HeavyAttack) && Skills[ESkills::ES_HeavyAttack].Acquired)
 	{
 		Super::StartHeavyAttack();
 	}
