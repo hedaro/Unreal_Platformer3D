@@ -24,6 +24,12 @@ struct FSkill
 
 	UPROPERTY(VisibleAnywhere)
 		bool Acquired;
+
+	UPROPERTY(EditAnywhere)
+		float LimitGaugeCost = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MustImplement = "BurstSkill_Interface"))
+		TSubclassOf<AActor> SkillToSpawn;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
