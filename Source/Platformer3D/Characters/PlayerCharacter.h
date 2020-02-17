@@ -194,6 +194,9 @@ public:
 
 	virtual void StartHeavyAttack() override;
 
+	UFUNCTION(BlueprintCallable)
+		void SpecialAttack_1();
+
 	/*** Save/Load Game ***/
 	UFUNCTION(BlueprintCallable)
 	virtual void SaveGame();

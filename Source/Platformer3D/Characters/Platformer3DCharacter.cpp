@@ -485,6 +485,7 @@ void APlatformer3DCharacter::RegisterAttackHitbox(UShapeComponent* Hitbox)
 		AttackHitbox->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 		AttackHitbox->SetCollisionProfileName(TEXT("Attacks"));
 		AttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &APlatformer3DCharacter::OnAttackOverlap);
+		DisableAttackHitBox();
 	}
 }
 

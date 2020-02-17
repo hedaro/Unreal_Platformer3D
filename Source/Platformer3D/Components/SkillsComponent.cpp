@@ -2,6 +2,8 @@
 
 
 #include "SkillsComponent.h"
+#include "Engine/World.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values for this component's properties
 USkillsComponent::USkillsComponent()
@@ -13,6 +15,12 @@ USkillsComponent::USkillsComponent()
 	// ...
 }
 
+void USkillsComponent::PostLoad()
+{
+	Super::PostLoad();
+
+	CharacterOwner = Cast<ACharacter>(GetOwner());
+}
 
 // Called when the game starts
 void USkillsComponent::BeginPlay()
@@ -20,7 +28,22 @@ void USkillsComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+	for (auto& S : Skills)
+	{
+		if (S.Value.SkillToSpawn)
+		{
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.Owner = CharacterOwner;
+			SpawnParameters.Instigator = CharacterOwner;
+			S.Value.SkillInstance = GetWorld()->SpawnActor<ABurstSkillBase>(S.Value.SkillToSpawn, CharacterOwner->GetActorLocation(), CharacterOwner->GetActorRotation(), SpawnParameters);
+			if (S.Value.SkillInstance)
+			{
+				FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::KeepRelative, false);
+				S.Value.SkillInstance->AttachToComponent(CharacterOwner->GetCapsuleComponent(), TransformRules);
+				S.Value.SkillInstance->SetSkillType(S.Key);
+			}
+		}
+	}
 }
 
 bool USkillsComponent::FindSkill(ESkills Skill) const
@@ -85,6 +108,27 @@ void USkillsComponent::AcquireSkill(ESkills Skill)
 	{
 		Skills[Skill].Acquired = true;
 	}
+}
+
+void USkillsComponent::BurstSkill(ESkills Skill)
+{
+	if (Skills.Contains(Skill) && Skills[Skill].SkillToSpawn && Skills[Skill].SkillInstance && !Skills[Skill].SkillInstance->IsActive())
+	{
+		ActiveBurstSkill = Skills[Skill].SkillInstance;
+		ActiveBurstSkill->Activate();
+		GetWorld()->GetTimerManager().SetTimer(SkillTimerHandle, this, &USkillsComponent::CancelBurstSkill, ActiveBurstSkill->GetDuration(), false);
+	}
+}
+
+void USkillsComponent::CancelBurstSkill()
+{
+	ActiveBurstSkill->Deactivate();
+	ActiveBurstSkill = NULL;
+}
+
+bool USkillsComponent::IsBurstSkillActive() const
+{
+	return ActiveBurstSkill && ActiveBurstSkill->IsActive();
 }
 
 // Called every frame

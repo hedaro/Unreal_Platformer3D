@@ -8,14 +8,15 @@
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerController.h"
-#include "Platformer3DPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h" //Remove with roll dodge
 //Custom libraries
+#include "Platformer3DPlayerController.h"
 #include "Interfaces/LockOn_Interface.h"
+#include "Skills/BurstSkillBase.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -115,6 +116,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Bow", IE_Pressed, this, &APlayerCharacter::StartRangedAttack);
 	PlayerInputComponent->BindAction("Bow", IE_Released, this, &APlayerCharacter::EndRangedAttack);
+
+	PlayerInputComponent->BindAction("SpecialAttack_1", IE_Pressed, this, &APlayerCharacter::SpecialAttack_1);
+	//PlayerInputComponent->BindAction("SpecialAttack_2", IE_Pressed, this, &APlayerCharacter::SpecialAttack_1);
+	//PlayerInputComponent->BindAction("SpecialAttack_3", IE_Pressed, this, &APlayerCharacter::SpecialAttack_1);
+	//PlayerInputComponent->BindAction("SpecialAttack_4", IE_Pressed, this, &APlayerCharacter::SpecialAttack_1);
 }
 
 void APlayerCharacter::LookAt(FVector Location, float Rate)
@@ -623,6 +629,19 @@ void APlayerCharacter::UseHealthPotion()
 		{
 			HealthComponent->RecoverHealth(HealthPotionRecovery);
 			ItemsHeld[EItem_Types::IT_HealthRecovery] = ItemsHeld[EItem_Types::IT_HealthRecovery] - 1;
+		}
+	}
+}
+
+void APlayerCharacter::SpecialAttack_1()
+{
+	if (!SkillsComponent->IsBurstSkillActive() && SkillsComponent->FindSkill(ESkills::ES_SpinningBlades))
+	{
+		FSkill SpecialAttack = SkillsComponent->GetSkill(ESkills::ES_SpinningBlades);
+
+		if (SpecialAttack.Acquired && SpecialAttack.SkillToSpawn && SpecialAttack.LimitGaugeCost <= LimitGauge)
+		{
+			SkillsComponent->BurstSkill(ESkills::ES_SpinningBlades);
 		}
 	}
 }
