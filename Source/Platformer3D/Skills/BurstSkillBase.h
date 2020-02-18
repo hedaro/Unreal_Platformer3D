@@ -35,8 +35,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void Activate();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnActivate();
+
 	UFUNCTION(BlueprintCallable)
 		void Deactivate();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnDeactivate();
 
 	UFUNCTION(BlueprintPure)
 		bool IsActive() const;

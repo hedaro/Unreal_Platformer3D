@@ -45,18 +45,6 @@ protected:
 	/*** Movement ***/
 	FVector HorizontalSpeed;
 
-	UFUNCTION()
-		void DisableMoveInput();
-
-	UFUNCTION()
-		void EnableMoveInput();
-
-	UFUNCTION()
-		void DisableLookupInput();
-
-	UFUNCTION()
-		void EnableLookupMoveInput();
-
 	/*** Lock On ***/
 	bool TargetLocked;
 	AActor* CurrentTarget;
@@ -101,6 +89,18 @@ protected:
 
 public:
 	/*** Movement ***/
+	UFUNCTION(BlueprintCallable)
+		void DisableMoveInput();
+
+	UFUNCTION(BlueprintCallable)
+		void EnableMoveInput();
+
+	UFUNCTION(BlueprintCallable)
+		void DisableLookupInput();
+
+	UFUNCTION(BlueprintCallable)
+		void EnableLookupMoveInput();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Movement")
 		float DodgeLaunchForce;
 

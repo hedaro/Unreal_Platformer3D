@@ -28,6 +28,8 @@ void ABurstSkillBase::Activate()
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
+
+	OnActivate();
 }
 
 void ABurstSkillBase::Deactivate()
@@ -37,6 +39,8 @@ void ABurstSkillBase::Deactivate()
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 	SetActorTickEnabled(false);
+
+	OnDeactivate();
 }
 
 bool ABurstSkillBase::IsActive() const
