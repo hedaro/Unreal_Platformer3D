@@ -166,6 +166,18 @@ void APlatformer3DCharacter::ToggleCrouchState()
 	}
 }
 
+void APlatformer3DCharacter::HideCharacter(bool DisableCollision)
+{
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(!DisableCollision);
+}
+
+void APlatformer3DCharacter::ShowCharacter()
+{
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+}
+
 bool APlatformer3DCharacter::GetIsCrouching()
 {
 	return GetMovementComponent()->IsCrouching();

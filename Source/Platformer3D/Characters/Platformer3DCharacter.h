@@ -88,6 +88,12 @@ protected:
 	float StunGauge = 0.f;
 
 public:
+	UFUNCTION(BlueprintCallable)
+		void HideCharacter(bool DisableCollision);
+
+	UFUNCTION(BlueprintCallable)
+		void ShowCharacter();
+
 	/*** Movement ***/
 	UFUNCTION(BlueprintCallable)
 		void DisableMoveInput();
